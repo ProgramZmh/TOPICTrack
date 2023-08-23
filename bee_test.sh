@@ -1,9 +1,9 @@
 
 exp=bee_test
 python3 main.py --exp_name $exp --post \
-  --alpha_gate 0.9 --gate 0.099 --gate2 0.3 --alpha_fixed_emb 0.95 --iou_thresh 0.2 \
+  --alpha_gate 0.9 --gate 0.099 --gate2 0.3 --iou_thresh 0.2 \
   --track_thresh 0.6 \
-  --cmc_off --da_off --aw_off --grid_off --new_kf_off \
+  --new_kf_off \
   --dataset bee \
   --aspect_ratio_thresh 1.6 --w_assoc_emb 0.7
 

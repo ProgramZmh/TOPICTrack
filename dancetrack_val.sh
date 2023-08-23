@@ -1,6 +1,6 @@
 exp=dance_val
 
-python3 main.py --exp_name $exp --post --alpha_gate 0.9 --gate 0.2  --cmc_off --da_off --aw_off --grid_off --new_kf_off --aspect_ratio_thresh 1000 --w_assoc_emb 1.25 --aw_param 1
+python3 main.py --exp_name $exp --post --alpha_gate 0.9 --gate 0.2  --new_kf_off --aspect_ratio_thresh 1000 --w_assoc_emb 1.25
 
 python3 external/TrackEval/scripts/run_mot_challenge.py \
   --SPLIT_TO_EVAL val \

@@ -13,7 +13,7 @@ from external.adaptors.fastreid_adaptor import FastReID
 
 
 class EmbeddingComputer:
-    def __init__(self, dataset, test_dataset, grid_off, max_batch=1024):
+    def __init__(self, dataset, test_dataset, grid_off=False, max_batch=1024):
         self.model = None
         self.dataset = dataset
         self.test_dataset = test_dataset
@@ -32,7 +32,7 @@ class EmbeddingComputer:
         """
         ...
         """
-        print('path1111: ',path)
+        # print('path1111: ',path)
         self.cache_name = path
         cache_path = self.cache_path.format(path)
         if os.path.exists(cache_path):

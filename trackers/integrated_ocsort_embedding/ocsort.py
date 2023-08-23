@@ -311,14 +311,8 @@ class OCSort(object):
         asso_func="iou",
         inertia=0.2,
         w_association_emb=0.75,
-        alpha_fixed_emb=0.95,
-        aw_param=0.5,
         embedding_off=False,
-        aw_off=False,
-        new_kf_off=False,
-        grid_off=False,
-        dynamic_appr_off=False,
-
+        new_kf_off=False,        
         **kwargs,
     ):
         
@@ -331,24 +325,19 @@ class OCSort(object):
         self.asso_func = ASSO_FUNCS[asso_func]
         self.inertia = inertia
         self.w_association_emb = w_association_emb
-        self.alpha_fixed_emb = alpha_fixed_emb
-        self.aw_param = aw_param
+
         KalmanBoxTracker.count = 0
 
         self.embedder = EmbeddingComputer(
-            kwargs["args"].dataset, kwargs["args"].test_dataset, grid_off)
+            kwargs["args"].dataset, kwargs["args"].test_dataset)
    
         self.embedding_off = embedding_off
-   
-        self.aw_off = aw_off
+        
         self.new_kf_off = new_kf_off
-        self.grid_off = grid_off
-        self.dynamic_appr_off = dynamic_appr_off
         self.min_hits = min_hits
 
         self.sigma = 5 
 
-       
         self.alpha_gate = alpha_gate  
         self.gate = gate  
         self.gate2 = gate2 
@@ -535,10 +524,6 @@ class OCSort(object):
                     k_observations,
                     self.inertia,
                     self.w_association_emb,
-                    self.aw_off,
-                    self.aw_param,
-                    self.embedding_off,
-                    self.grid_off,
                     track_indices, tracks_info, gate, metric
                 )
             else:
@@ -662,111 +647,6 @@ class OCSort(object):
             (matched_2, np.zeros(matched_2.shape[0]).reshape(-1, 1)))
 
         return (matched_2, unmatched_trks_2, np.array([]))
-    
-    def level_matching_v0(self,depth,
-                       track_indices, detection_indices,
-                        trk_embs,
-                       dets_embs,
-                        trks,
-                        dets, 
-                        dets_alpha,
-                        speeds,
-                        velocities,
-                        k_observations,
-                        last_boxes,
-                ):
-
-        if track_indices is None:
-            track_indices = np.arange(len(trks))
-        if detection_indices is None:
-            detection_indices = np.arange(len(dets))
-            
-        if len(detection_indices) == 0 or len(track_indices) == 0:
-            return np.empty((0, 2), dtype=int), track_indices, detection_indices 
-      
-        if len(detection_indices) != 0 and len(track_indices) != 0:
-            tracks_info = {}
-            alpha = metric_gaussian_motion(speeds, sigma=self.sigma)
-            for i, idx in enumerate(track_indices):
-                tracks_info[idx] = alpha[i]
-            gate = self.gate if depth==0 else self.gate2
-            appearance_pre_assign, emb_cost = appearance_associate(
-                dets_embs,
-                trk_embs,
-                dets, trks,
-                track_indices, detection_indices, tracks_info,
-                gate, self.iou_threshold)
-            if depth ==0:
-                motion_pre_assign = associate(
-                    dets,
-                    trks,
-                    dets_embs,
-                    trk_embs,
-                    emb_cost,
-                    self.iou_threshold,
-                    velocities,
-                    k_observations,
-                    self.inertia,
-                    self.w_association_emb,
-                    self.aw_off,
-                    self.aw_param,
-                    self.embedding_off,
-                    self.grid_off,
-                    track_indices, tracks_info,
-                )
-            else:
-                motion_pre_assign = (np.empty(
-                (0, 4), dtype=int),[],[])
-
-            matched_1, unmatched_trks_1, unmatched_dets_1 = min_cost_matching(
-                motion_pre_assign, appearance_pre_assign, self.alpha_gate)
-        else:
-            matched_1, unmatched_trks_1, unmatched_dets_1 = np.empty(
-                (0, 2), dtype=int), np.empty((0, 5), dtype=int), detection_indices
-
-        if unmatched_dets_1.shape[0] > 0 and unmatched_trks_1.shape[0] > 0:
-
-            if depth==0:
-                motion_pre_assign = self.motion_third_associate(
-                    dets, last_boxes, unmatched_dets_1, unmatched_trks_1, tracks_info)
-            else:
-                motion_pre_assign = (np.empty(
-                (0, 4), dtype=int),[],[])
-
-            left_dets_embs = dets_embs[unmatched_dets_1]
-            left_trks_embs = [trk_embs[i] for i in unmatched_trks_1]
-            left_dets = dets[unmatched_dets_1]
-            left_trks = trks[unmatched_trks_1]
-            gate = self.gate if depth==0 else self.gate2
-            appearance_pre_assign, emb_cost = appearance_associate(
-                left_dets_embs,
-                left_trks_embs,
-                left_dets, left_trks,
-                unmatched_trks_1, unmatched_dets_1,
-                tracks_info,
-                gate, self.iou_threshold)
-
-            matched_2, unmatched_trks_2, unmatched_dets_2 = min_cost_matching(
-                motion_pre_assign, appearance_pre_assign, self.alpha_gate)
-        else:
-            matched_2 = np.empty((0, 2), dtype=int)
-            unmatched_trks_2=unmatched_trks_1
-            unmatched_dets_2=unmatched_dets_1
-
-            
-            
-        if len(matched_1) and len(matched_2):
-            matched = np.concatenate((matched_1,matched_2),axis=0)
-        elif len(matched_2):
-            matched = matched_2
-        elif len(matched_1):
-            matched = matched_1
-        else:
-            matched = np.empty((0, 2), dtype=int)
-        unmatched_trks = unmatched_trks_2
-        unmatched_dets = unmatched_dets_2
-        
-        return matched, unmatched_trks, unmatched_dets
 
     def map_origin_ind(self, track_indices_l,
         unmatched_dets,
@@ -908,117 +788,6 @@ class OCSort(object):
                 self.trackers.pop(i)
             
         return ret
-
-    def assign_(self, dets, dets_embs, dets_alpha):
-        ret = []
-       
-        trks, velocities, speeds, last_boxes, k_observations, trk_embs = \
-            self.get_pred_loc_from_exist_tracks()
-        track_indices = list(range(len(trks)))
-        detection_indices = list(range(len(dets)))
-        if len(detection_indices) != 0 and len(track_indices) != 0:
-          
-            tracks_info = {}
-            alpha = metric_gaussian_motion(speeds, sigma=self.sigma)
-            for i, idx in enumerate(track_indices):
-                tracks_info[idx] = alpha[i]
-            appearance_pre_assign, emb_cost = appearance_associate(
-                dets_embs,
-                trk_embs,
-                dets, trks,
-                track_indices, detection_indices, tracks_info,
-                self.gate, self.iou_threshold)
-            
-            motion_pre_assign = associate(
-                dets,
-                trks,
-                dets_embs,
-                trk_embs,
-                emb_cost,
-                self.iou_threshold,
-                velocities,
-                k_observations,
-                self.inertia,
-                self.w_association_emb,
-                self.aw_off,
-                self.aw_param,
-                self.embedding_off,
-                self.grid_off,
-                track_indices, tracks_info,
-            )
-         
-
-        
-
-            matched, unmatched_trks, unmatched_dets = min_cost_matching(
-                motion_pre_assign, appearance_pre_assign, self.alpha_gate)
-          
-            for m in matched:
-            
-                self.trackers[m[0]].update(dets[m[1], :])
-                self.trackers[m[0]].update_emb(
-                    dets_embs[m[1]], alpha=dets_alpha[m[1]])
-               
-            
-        else:
-            matched, unmatched_trks, unmatched_dets = np.empty(
-                (0, 2), dtype=int), np.empty((0, 5), dtype=int), np.arange(len(detection_indices))
-       
-        if unmatched_dets.shape[0] > 0 and unmatched_trks.shape[0] > 0:
-            motion_pre_assign = self.motion_third_associate(
-                dets, last_boxes, unmatched_dets, unmatched_trks, tracks_info,self.iou_threshold)
-           
-            left_dets_embs = dets_embs[unmatched_dets]
-            left_trks_embs = [trk_embs[i] for i in unmatched_trks]
-            left_dets = dets[unmatched_dets]
-            left_trks = trks[unmatched_trks]
-      
-            appearance_pre_assign, emb_cost = appearance_associate(
-                left_dets_embs,
-                left_trks_embs,
-                left_dets, left_trks,
-                unmatched_trks, unmatched_dets,
-                tracks_info,
-                self.gate, self.iou_threshold)
-      
-            matched, unmatched_trks, unmatched_dets = min_cost_matching(
-                motion_pre_assign, appearance_pre_assign, self.alpha_gate)
-           
-            for m in matched:
-                self.trackers[int(m[0])].update(dets[int(m[1]), :])
-                self.trackers[int(m[0])].update_emb(
-                    dets_embs[int(m[1])], alpha=dets_alpha[int(m[1])])
-        
-       
-        for m in unmatched_trks:
-            self.trackers[m].update(None)
-      
-        for i in unmatched_dets:
-            trk = KalmanBoxTracker(
-                dets[i, :], delta_t=self.delta_t, emb=dets_embs[i], alpha=dets_alpha[i], new_kf=not self.new_kf_off
-            )
-            self.trackers.append(trk)
-  
-        i = len(self.trackers)
-       
-        for trk in reversed(self.trackers):
-            if trk.last_observation.sum() < 0:
-                d = trk.get_state()[0]
-            else:
-              
-                d = trk.last_observation[:4]
-        
-            if (trk.time_since_update < 1) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):
-               
-                ret.append(np.concatenate((d, [trk.id + 1])).reshape(1, -1))
-            i -= 1
-            
-            if trk.time_since_update > self.max_age:
-                self.trackers.pop(i)
-     
-        if len(ret) > 0:
-            return np.concatenate(ret)
-        return np.empty((0, 5))
 
     def dump_cache(self):
         self.embedder.dump_cache()

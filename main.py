@@ -137,14 +137,8 @@ def main():
         delta_t=args.deltat,
         inertia=args.inertia,
         w_association_emb=args.w_assoc_emb,
-        alpha_fixed_emb=args.alpha_fixed_emb,
         embedding_off=args.emb_off,
-        aw_off=args.aw_off,
-        aw_param=args.aw_param,
         new_kf_off=args.new_kf_off,
-        grid_off=args.grid_off,
-        dynamic_appr_off=args.da_off,
-
     )
     tracker = tracker_module.ocsort.OCSort(**oc_sort_args)
     results = {}

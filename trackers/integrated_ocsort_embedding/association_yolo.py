@@ -241,29 +241,6 @@ def associate_detections_to_trackers(detections, trackers, iou_threshold=0.3):
     return matches, np.array(unmatched_detections), np.array(unmatched_trackers)
 
 
-def compute_aw_new_metric(emb_cost, w_association_emb, max_diff=0.5):
-    w_emb = np.full_like(emb_cost, w_association_emb)
-    w_emb_bonus = np.full_like(emb_cost, 0)
-
-    if emb_cost.shape[1] >= 2:
-      
-        for idx in range(emb_cost.shape[0]):
-            inds = np.argsort(-emb_cost[idx])
-          
-            row_weight = min(emb_cost[idx, inds[0]] -
-                             emb_cost[idx, inds[1]], max_diff)
-         
-            w_emb_bonus[idx] += row_weight / 2
-
-    if emb_cost.shape[0] >= 2:
-        for idj in range(emb_cost.shape[1]):
-            inds = np.argsort(-emb_cost[:, idj])
-            col_weight = min(emb_cost[inds[0], idj] -
-                             emb_cost[inds[1], idj], max_diff)
-            w_emb_bonus[:, idj] += col_weight / 2
-
-    return w_emb + w_emb_bonus
-
 
 def split_cosine_dist(dets, trks, affinity_thresh=0.55, pair_diff_thresh=0.6, hard_thresh=True):
 
@@ -363,10 +340,6 @@ def associate(
     previous_obs,
     vdc_weight,
     w_assoc_emb,
-    aw_off,
-    aw_param,
-    emb_off,
-    grid_off,
     track_indices, tracks_info, gate, metric
 ):
     if len(trackers) == 0:
@@ -420,12 +393,7 @@ def associate(
           
                 pass
           
-            if not aw_off:
-                w_matrix = compute_aw_new_metric(
-                    emb_cost, w_assoc_emb, aw_param)
-                emb_cost *= w_matrix
-            else:
-                emb_cost *= w_assoc_emb
+            emb_cost *= w_assoc_emb
             final_cost = -(iou_matrix + angle_diff_cost+emb_cost)
            
             matched_indices = linear_assignment(final_cost)
