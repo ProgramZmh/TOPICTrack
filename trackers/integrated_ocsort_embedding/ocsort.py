@@ -12,7 +12,7 @@ import torchvision
 
 import numpy as np
 
-from .association_yolo import *
+from .association import *
 from .embedding import EmbeddingComputer
 
 from .assignment import *
@@ -311,7 +311,6 @@ class OCSort(object):
         asso_func="iou",
         inertia=0.2,
         w_association_emb=0.75,
-        embedding_off=False,
         new_kf_off=False,        
         **kwargs,
     ):
@@ -330,8 +329,6 @@ class OCSort(object):
 
         self.embedder = EmbeddingComputer(
             kwargs["args"].dataset, kwargs["args"].test_dataset)
-   
-        self.embedding_off = embedding_off
         
         self.new_kf_off = new_kf_off
         self.min_hits = min_hits
@@ -392,7 +389,7 @@ class OCSort(object):
 
     def generate_embs(self, dets, img_numpy, tag):
         dets_embs = np.ones((dets.shape[0], 1))
-        if not self.embedding_off and dets.shape[0] != 0:
+        if dets.shape[0] != 0:
             dets_embs = self.embedder.compute_embedding(
                 img_numpy, dets[:, :4], tag)
         return dets_embs

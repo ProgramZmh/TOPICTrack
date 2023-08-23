@@ -37,12 +37,6 @@ def get_main_args():
     parser.add_argument("--w_assoc_emb", type=float,
                         default=0.75, help="Combine weight for emb cost")
     parser.add_argument(
-        "--alpha_fixed_emb",
-        type=float,
-        default=0.95,
-        help="Alpha fixed for EMA embedding",
-    )
-    parser.add_argument(
         "--alpha_gate",
         type=float,
         default=0.9,
@@ -60,15 +54,7 @@ def get_main_args():
         default=0.3,
         help="gate",
     )
-
-    parser.add_argument("--emb_off", action="store_true")
-    parser.add_argument("--cmc_off", action="store_true")
-    parser.add_argument("--aw_off", action="store_true")
-    parser.add_argument("--aw_param", type=float, default=0.5)
     parser.add_argument("--new_kf_off", action="store_true")
-    parser.add_argument("--grid_off", action="store_true")
-    parser.add_argument("--da_off", action="store_true")
-
     parser.add_argument("--metric", type=str, default="res_recons")
     parser.add_argument("--two_round_off", action="store_true")
 
@@ -137,7 +123,6 @@ def main():
         delta_t=args.deltat,
         inertia=args.inertia,
         w_association_emb=args.w_assoc_emb,
-        embedding_off=args.emb_off,
         new_kf_off=args.new_kf_off,
     )
     tracker = tracker_module.ocsort.OCSort(**oc_sort_args)
