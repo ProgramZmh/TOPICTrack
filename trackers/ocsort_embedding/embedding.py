@@ -45,7 +45,7 @@ class EmbeddingComputer:
         if self.model is None:
             self.initialize_model()
 
-        # Make sure bbox is within image frame
+       
         if is_numpy:
             h, w = img.shape[:2]
         else:
@@ -56,7 +56,7 @@ class EmbeddingComputer:
         results[:, 2] = results[:, 2].clip(0, w)
         results[:, 3] = results[:, 3].clip(0, h)
 
-        # Generate all the crops
+       
         crops = []
         for p in results:
             if is_numpy:
@@ -73,7 +73,7 @@ class EmbeddingComputer:
 
         crops = torch.cat(crops, dim=0)
 
-        # Create embeddings and l2 normalize them
+  
         with torch.no_grad():
             crops = crops.cuda()
             crops = crops.half()
@@ -85,18 +85,7 @@ class EmbeddingComputer:
         return embs
 
     def initialize_model(self):
-        """
-        model = torchreid.models.build_model(name="osnet_ain_x1_0", num_classes=2510, loss="softmax", pretrained=False)
-        sd = torch.load("external/weights/osnet_ain_ms_d_c.pth.tar")["state_dict"]
-        new_state_dict = OrderedDict()
-        for k, v in sd.items():
-            name = k[7:]  # remove `module.`
-            new_state_dict[name] = v
-        # load params
-        model.load_state_dict(new_state_dict)
-        model.eval()
-        model.cuda()
-        """
+        
         if self.dataset == "mot17":
             path = "external/weights/mot17_sbs_S50.pth"
         elif self.dataset == "mot20":

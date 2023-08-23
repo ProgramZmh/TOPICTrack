@@ -17,14 +17,10 @@ class JsonMeta(object):
 
 
 class BaseJsonLogger(object):
-    """
-    This is the base class that returns __dict__ of its own
-    it also returns the dicts of objects in the attributes that are list instances
-
-    """
+   
 
     def dic(self):
-        # returns dicts of objects
+        
         out = {}
         for k, v in self.__dict__.items():
             if hasattr(v, 'dic'):
@@ -37,7 +33,7 @@ class BaseJsonLogger(object):
 
     @staticmethod
     def list(values):
-        # applies the dic method on items in the list
+       
         return [v.dic() if hasattr(v, 'dic') else v for v in values]
 
 
@@ -83,7 +79,7 @@ class Bbox(BaseJsonLogger):
         self.height = height
 
     def add_label(self, category, confidence):
-        # adds category and confidence only if top_k is not exceeded.
+       
         self.labels.append(Label(category, confidence))
 
     def labels_full(self, value):
@@ -91,21 +87,7 @@ class Bbox(BaseJsonLogger):
 
 
 class Frame(BaseJsonLogger):
-    """
-    This module stores the information for each frame and use them in JsonParser
-    Attributes:
-        timestamp (float): The elapsed time of captured frame
-        frame_id (int): The frame number of the captured video
-        bboxes (list of Bbox objects): Stores the list of bbox objects.
-
-    References:
-        Check Bbox class for better information
-
-    Args:
-        timestamp (float):
-        frame_id (int):
-
-    """
+   
 
     def __init__(self, frame_id: int, timestamp: float = None):
         self.frame_id = frame_id

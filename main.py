@@ -15,7 +15,6 @@ from trackers import integrated_ocsort_embedding as tracker_module
 
 
 def get_main_args():
-    # TODO：两个超参数
     parser = tracker_module.args.make_parser()
     parser.add_argument("--dataset", type=str, default="dance")
     parser.add_argument("--result_folder", type=str,
@@ -91,142 +90,42 @@ def get_main_args():
     print(args)
     return args
 
-
-def get_main_args_debug():
-    parser = tracker_module.args.make_parser()
-    parser.add_argument("--dataset", type=str, default="bee")
-    parser.add_argument("--result_folder", type=str,
-                        default="results/trackers/")
-    parser.add_argument("--test_dataset", action="store_true")
-    parser.add_argument("--exp_name", type=str, default="debug")
-    parser.add_argument("--min_box_area", type=float,
-                        default=10, help="filter out tiny boxes")
-    parser.add_argument(
-        "--aspect_ratio_thresh",
-        type=float,
-        default=1.6,
-        help="threshold for filtering out boxes of which aspect ratio are above the given value.",
-    )
-    parser.add_argument(
-        "--post",
-        default=True,
-        help="run post-processing linear interpolation.",
-    )
-    # parser.add_argument(
-    #     "--post",
-    #     action="store_true",
-    #     help="run post-processing linear interpolation.",
-    # )
-    parser.add_argument("--w_assoc_emb", type=float,
-                        default=0.75, help="Combine weight for emb cost")
-    parser.add_argument(
-        "--alpha_fixed_emb",
-        type=float,
-        default=0.95,
-        help="Alpha fixed for EMA embedding",
-    )
-    parser.add_argument(
-        "--alpha_gate",
-        type=float,
-        default=0.5,
-        help="alpha_gate",
-    )
-    parser.add_argument(
-        "--gate",
-        type=float,
-        default=0.3,
-        help="gate",
-    )
-    parser.add_argument(
-        "--gate2",
-        type=float,
-        default=0.1,
-        help="gate",
-    )
-    parser.add_argument("--emb_off", action="store_true")
-    parser.add_argument("--cmc_off", default=True)
-    parser.add_argument("--aw_off", default=True)
-    parser.add_argument("--aw_param", type=float, default=0.5)
-    parser.add_argument("--new_kf_off", default=True)
-    parser.add_argument("--grid_off", default=True)
-    parser.add_argument("--da_off", default=True)
-    # parser.add_argument("--emb_off", action="store_true")
-    # parser.add_argument("--cmc_off", action="store_true")
-    # parser.add_argument("--aw_off", action="store_true")
-    # parser.add_argument("--aw_param", type=float, default=0.5)
-    # parser.add_argument("--new_kf_off", action="store_true")
-    # parser.add_argument("--grid_off", action="store_true")
-    # parser.add_argument("--da_off", action="store_true")
-    args = parser.parse_args()
-
-    if args.dataset == "mot17":
-        args.result_folder = os.path.join(args.result_folder, "MOT17-val")
-    elif args.dataset == "mot20":
-        args.result_folder = os.path.join(args.result_folder, "MOT20-val")
-    elif args.dataset == "dance":
-        args.result_folder = os.path.join(args.result_folder, "DANCE-val")
-    elif args.dataset == "bee":
-        args.result_folder = os.path.join(args.result_folder, "BEE-val")
-    elif args.dataset == "gmot":
-        args.result_folder = os.path.join(args.result_folder, "GMOT-val")
-    if args.test_dataset:
-        args.result_folder.replace("-val", "-test")
-    
-    print(args)
-    return args
-
-
 def main():
     np.set_printoptions(suppress=True, precision=5)
-    # Set dataset and detector
+
     args = get_main_args()
     
-    # args = get_main_args_debug()
-    
-    # sys.exit()
     if args.dataset == "mot17":
         if args.test_dataset:
             detector_path = "external/weights/bytetrack_x_mot17.pth.tar"
         else:
             detector_path = "external/weights/bytetrack_ablation.pth.tar"
-            # detector_path = "external/weights/yolox_x.pth"
-            # detector_path = "external/weights/yolox_s.pth"
-            # detector_path = "external/weights/yolox_m.pth"
-            # detector_path = "external/weights/yolox_l.pth"
+            
         size = (800, 1440)
     elif args.dataset == "mot20":
         if args.test_dataset:
             detector_path = "external/weights/bytetrack_x_mot20.tar"
             size = (896, 1600)
         else:
-            # Just use the mot17 test model as the ablation model for 20
+          
             detector_path = "external/weights/bytetrack_x_mot17.pth.tar"
-            # detector_path = "external/weights/bytetrack_x_mot20.tar"
+         
             size = (800, 1440)
     elif args.dataset == "dance":
-        # Same model for test and validation
+      
         detector_path = "external/weights/bytetrack_dance_model.pth.tar"
         size = (800, 1440)
     elif args.dataset == "bee":
-        # Same model for test and validation
-        # detector_path = "external/weights/beev2.pth.tar"
-        detector_path = "external/weights/bee.pth.tar" # best
-        # detector_path = "external/weights/bee_v3.pth.tar"
+        detector_path = "external/weights/bee.pth.tar" 
         size = (800, 1440)
     elif args.dataset == "gmot":
-        # Same model for test and validation
-        # detector_path = "external/weights/gmot_v2.pth.tar"
-        detector_path = "YOLOX_outputs_gmot/mot17_half_seed@52/best_ckpt.pth.tar"
-        # detector_path = "YOLOX_outputs_gmot/mot17_half_seed@57_2/best_ckpt.pth.tar"
-        # detector_path = "external/weights/best_ckpt.pth.tar"
+        detector_path = "external/weights/gmot.pth.tar"
         size = (800, 1440)
     else:
         raise RuntimeError(
             "Need to update paths for detector for extra datasets.")
     det = detector.Detector("yolox", detector_path, args.dataset)
     loader = dataset.get_mot_loader(args.dataset, args.test_dataset, size=size)
-
-    # Set up tracker
     oc_sort_args = dict(
         args=args,
         det_thresh=args.track_thresh,
@@ -240,7 +139,6 @@ def main():
         w_association_emb=args.w_assoc_emb,
         alpha_fixed_emb=args.alpha_fixed_emb,
         embedding_off=args.emb_off,
-        cmc_off=args.cmc_off,
         aw_off=args.aw_off,
         aw_param=args.aw_param,
         new_kf_off=args.new_kf_off,
@@ -252,28 +150,11 @@ def main():
     results = {}
     frame_count = 0
     total_time = 0
-    print('result_path: ', detector_path)
-    # See __getitem__ of dataset.MOTDataset
     for (img, np_img), label, info, idx in loader:
 
-        # Frame info
         frame_id = info[2].item()
-        print("frame_id: ", frame_id)
+
         video_name = info[4][0].split("/")[0]
-
-        # Hacky way to skip SDP and DPM when testing
-        # if "FRCNN" not in video_name and args.dataset == "mot17":
-        #     continue
-
-        # # TODO: 临时测试sequence
-        # if ("BEE2212" != video_name) and args.dataset == "bee":
-        #     break
-        
-        # print("video_name:", video_name)
-        # if ("dancetrack0004" != video_name) and args.dataset == "dance":
-        #     break
-        # if ("dancetrack0004" != video_name and "dancetrack0005" != video_name and "dancetrack0007" != video_name) and args.dataset == "dance":
-        #     break
         
         tag = f"{video_name}:{frame_id}"
 
@@ -281,39 +162,29 @@ def main():
             results[video_name] = []
         img = img.cuda()
 
-        # Initialize tracker on first frame of a new video
-        # print(f"Processing {video_name}:{frame_id}", end="\t")
         if frame_id == 1:
-            print(f"Initializing tracker for {video_name}")
-            print(
-                f"Time spent: {total_time:.3f}, FPS {frame_count / (total_time + 1e-9):.2f}")
             tracker.dump_cache()
             tracker = tracker_module.ocsort.OCSort(**oc_sort_args)
 
         start_time = time.time()
 
-        # Nx5 of (x1, y1, x2, y2, conf), pass in tag for caching
         pred = det(img, tag)
         if pred is None:
             continue
-        # Nx5 of (x1, y1, x2, y2, ID)
+
         
         targets = tracker.update(pred, img, np_img[0].numpy(), tag, args.metric, args.two_round_off)
-        tlwhs, ids, flage_ARR_MON, motion = utils.filter_targets(
+        tlwhs, ids = utils.filter_targets(
             targets, args.aspect_ratio_thresh, args.min_box_area, args.dataset)
 
         total_time += time.time() - start_time
         frame_count += 1
 
-        results[video_name].append((frame_id, tlwhs, ids, flage_ARR_MON, motion))
+        results[video_name].append((frame_id, tlwhs, ids))
 
-    print(
-        f"Time spent: {total_time:.3f}, FPS {frame_count / (total_time + 1e-9):.2f}")
-    # Save detector results
     det.dump_cache()
     tracker.dump_cache()
 
-    # Save for all sequences
     folder = os.path.join(args.result_folder, args.exp_name, "data")
     os.makedirs(folder, exist_ok=True)
     for name, res in results.items():

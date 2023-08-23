@@ -19,12 +19,10 @@ parser.add_argument("--interval",'-i',default=20,type=int)
 parser.add_argument('--resume', '-r',action='store_true')
 args = parser.parse_args()
 
-# device
 device = "cuda:{}".format(args.gpu_id) if torch.cuda.is_available() and not args.no_cuda else "cpu"
 if torch.cuda.is_available() and not args.no_cuda:
     cudnn.benchmark = True
 
-# data loading
 root = args.data_dir
 train_dir = os.path.join(root,"train")
 test_dir = os.path.join(root,"test")
@@ -49,26 +47,22 @@ testloader = torch.utils.data.DataLoader(
 )
 num_classes = max(len(trainloader.dataset.classes), len(testloader.dataset.classes))
 
-# net definition
 start_epoch = 0
 net = Net(num_classes=num_classes)
 if args.resume:
     assert os.path.isfile("./checkpoint/ckpt.t7"), "Error: no checkpoint file found!"
     print('Loading from checkpoint/ckpt.t7')
     checkpoint = torch.load("./checkpoint/ckpt.t7")
-    # import ipdb; ipdb.set_trace()
     net_dict = checkpoint['net_dict']
     net.load_state_dict(net_dict)
     best_acc = checkpoint['acc']
     start_epoch = checkpoint['epoch']
 net.to(device)
 
-# loss and optimizer
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(net.parameters(), args.lr, momentum=0.9, weight_decay=5e-4)
 best_acc = 0.
 
-# train function for each epoch
 def train(epoch):
     print("\nEpoch : %d"%(epoch+1))
     net.train()
@@ -79,23 +73,20 @@ def train(epoch):
     interval = args.interval
     start = time.time()
     for idx, (inputs, labels) in enumerate(trainloader):
-        # forward
+       
         inputs,labels = inputs.to(device),labels.to(device)
         outputs = net(inputs)
         loss = criterion(outputs, labels)
 
-        # backward
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        # accumurating
         training_loss += loss.item()
         train_loss += loss.item()
         correct += outputs.max(dim=1)[1].eq(labels).sum().item()
         total += labels.size(0)
 
-        # print 
         if (idx+1)%interval == 0:
             end = time.time()
             print("[progress:{:.1f}%]time:{:.2f}s Loss:{:.5f} Correct:{}/{} Acc:{:.3f}%".format(
@@ -129,7 +120,6 @@ def test(epoch):
                 100.*(idx+1)/len(testloader), end-start, test_loss/len(testloader), correct, total, 100.*correct/total
             ))
 
-    # saving checkpoint
     acc = 100.*correct/total
     if acc > best_acc:
         best_acc = acc
@@ -145,7 +135,6 @@ def test(epoch):
 
     return test_loss/len(testloader), 1.- correct/total
 
-# plot figure
 x_epoch = []
 record = {'train_loss':[], 'train_err':[], 'test_loss':[], 'test_err':[]}
 fig = plt.figure()
@@ -168,7 +157,6 @@ def draw_curve(epoch, train_loss, train_err, test_loss, test_err):
         ax1.legend()
     fig.savefig("train.jpg")
 
-# lr decay
 def lr_decay():
     global optimizer
     for params in optimizer.param_groups:

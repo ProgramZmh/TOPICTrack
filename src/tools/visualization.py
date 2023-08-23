@@ -127,7 +127,7 @@ def DrawStatistic(im, text_draw):
                          org=(int(w * 0.01), y),
                          fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                          fontScale=0.8,
-                         #  color=(255, 255, 255),
+                        
                          color=(0, 0, 255),
                          thickness=2)
 
@@ -136,9 +136,9 @@ def DrawStatistic(im, text_draw):
 
 def DrawTrackers(im, trackers,  frame_id,
                  n, results_txt_path):
-    # draw bbox
+   
     im = draw_bboxes(im, trackers)
-    # draw center points
+   
     pre_records = tbd_utils.GetLastNLines(results_txt_path, n)
     if len(pre_records) > 0:
         results = tbd_utils.Txt2Numpy(pre_records)
@@ -151,23 +151,19 @@ def DrawTrackers(im, trackers,  frame_id,
 
 def DrawAdditional(im, trackers, boundary, frame_id,
                    n, results_txt_path, total_entry, total_out):
-    # draw bbox
+   
     im = draw_bboxes(im, trackers)
-    # draw center points
+   
     pre_records = tbd_utils.GetLastNLines(results_txt_path, n)
     if len(pre_records) > 0:
         results = tbd_utils.Txt2Numpy(pre_records)
         id_range, ids_centors = tbd_utils.ExtractInfoFromRecords(
             results, frame_id)
         im = draw_centors(im, id_range, ids_centors)
-    # add boundary of count objects
+ 
     x1, y1, x2, y2 = tbd_utils.tlwh2xyxy(boundary)
     im = cv2.rectangle(im, (x1, y1), (x2, y2),
                        color=(0, 0, 255), thickness=5)
-    # # show statistic info
-    # now = str(datetime.datetime.now()).replace(" ", "T")
-    # text_draw = "%s: %d\nEntry: %d, Out: %d" \
-    #     % (now, len(trackers), total_entry, total_out)
-    # im = DrawStatistic(im, text_draw)
+   
 
     return im

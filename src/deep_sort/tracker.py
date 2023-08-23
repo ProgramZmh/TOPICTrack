@@ -5,11 +5,10 @@ import torch
 from src.deep_sort.utils.parser import get_config
 from src.deep_sort.deep_sort import DeepSort
 
-# torch.set_num_threads(1)
 
 cfg = get_config()
 cfg.merge_from_file(
-    "/home/caoxiaoyan/MOTmethods/YOLOTrack/src/deep_sort/configs/deep_sort.yaml")
+    "configs/deep_sort.yaml")
 deepsort = DeepSort(cfg.DEEPSORT.REID_CKPT,
                     max_dist=cfg.DEEPSORT.MAX_DIST, min_confidence=cfg.DEEPSORT.MIN_CONFIDENCE,
                     nms_max_overlap=cfg.DEEPSORT.NMS_MAX_OVERLAP, max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
@@ -18,14 +17,7 @@ deepsort = DeepSort(cfg.DEEPSORT.REID_CKPT,
 
 
 def step(results, RESET, opt):
-    """[summary]
-
-    Args:
-        results ([type]): ct, tracking, bbox, class, score, embedding
-
-    Returns:
-        [type]: [description]
-    """
+   
     bboxes_xyxy = []
     previous_cts = []
     cts = []
@@ -33,7 +25,7 @@ def step(results, RESET, opt):
     point_embeddings = []
 
     if len(results) == 0:
-        # TODO:整张图片都没物体时怎么处理？这对测试集没有影响，所以先不考虑
+  
         pass
 
     start_time = time.time()
@@ -75,24 +67,23 @@ def step(results, RESET, opt):
     res_t = res_time - update_time
     track_time = time.time()
     track_t = track_time - start_time
-    # print("track: %.3f | extract: %.3f | update: %.3f | res: %.3f" %
-    #       (track_t, extract_t, update_t, res_t))
+  
 
     return results, tracks
 
 
 def extract_det_info(results):
     det_boxes = np.array([[item['bbox'][0], item['bbox'][1],
-                           item['bbox'][2], item['bbox'][3]] for item in results], np.float32)  # N x 4
+                           item['bbox'][2], item['bbox'][3]] for item in results], np.float32)   
 
     ct = np.array(
-        [det['ct'] for det in results], np.float32)  # N x 2
+        [det['ct'] for det in results], np.float32) 
     previous_ct = np.array(
-        [det['ct'] + det['tracking'] for det in results], np.float32)  # N x 2
+        [det['ct'] + det['tracking'] for det in results], np.float32) 
 
     item_score = np.array([item['score']
-                           for item in results], np.float32)  # N
+                           for item in results], np.float32) 
     item_embedding = np.array([item['embedding']
-                               for item in results], np.float32)  # N
+                               for item in results], np.float32) 
 
     return zip(ct, previous_ct, det_boxes, item_score, item_embedding)

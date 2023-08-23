@@ -46,16 +46,9 @@ class Tracker:
             track.mark_missed()
 
     def update(self, detections, classes):
-        """Perform measurement update and track management.
-        Parameters
-        ----------
-        detections : List[deep_sort.detection.Detection]
-            A list of detections at the current time step.
-        """
-        # Run matching cascade.
+       
         matches, unmatched_tracks, unmatched_detections = self._match(detections)
 
-        # Update track set.
         for track_idx, detection_idx in matches:
             self.tracks[track_idx].update(self.kf, detections[detection_idx])
         for track_idx in unmatched_tracks:
@@ -64,7 +57,6 @@ class Tracker:
             self._initiate_track(detections[detection_idx], classes[detection_idx].item())
         self.tracks = [t for t in self.tracks if not t.is_deleted()]
 
-        # Update distance metric.
         active_targets = [t.track_id for t in self.tracks if t.is_confirmed()]
         features, targets = [], []
         for track in self.tracks:
@@ -86,11 +78,9 @@ class Tracker:
 
             return cost_matrix
 
-        # Split track set into confirmed and unconfirmed tracks.
         confirmed_tracks = [i for i, t in enumerate(self.tracks) if t.is_confirmed()]
         unconfirmed_tracks = [i for i, t in enumerate(self.tracks) if not t.is_confirmed()]
 
-        # Associate confirmed tracks using appearance features.
         (matches_a, unmatched_tracks_a, unmatched_detections,) = linear_assignment.matching_cascade(
             gated_metric,
             self.metric.matching_threshold,
@@ -100,7 +90,6 @@ class Tracker:
             confirmed_tracks,
         )
 
-        # Associate remaining tracks together with unconfirmed tracks using IOU.
         iou_track_candidates = unconfirmed_tracks + [
             k for k in unmatched_tracks_a if self.tracks[k].time_since_update == 1
         ]
@@ -185,11 +174,11 @@ class DeepSort(object):
         img_file_name = os.path.join(get_yolox_datadir(), "mot", "train", img_file_name)
         ori_img = cv2.imread(img_file_name)
         self.height, self.width = ori_img.shape[:2]
-        # post process detections
+    
         output_results = output_results.cpu().numpy()
         confidences = output_results[:, 4] * output_results[:, 5]
 
-        bboxes = output_results[:, :4]  # x1y1x2y2
+        bboxes = output_results[:, :4]
         img_h, img_w = img_info[0], img_info[1]
         scale = min(img_size[0] / float(img_h), img_size[1] / float(img_w))
         bboxes /= scale
@@ -199,7 +188,6 @@ class DeepSort(object):
         bbox_tlwh = bbox_tlwh[remain_inds]
         confidences = confidences[remain_inds]
 
-        # generate detections
         features = self._get_features(bbox_tlwh, ori_img)
         detections = [
             Detection(bbox_tlwh[i], conf, features[i])
@@ -208,15 +196,12 @@ class DeepSort(object):
         ]
         classes = np.zeros((len(detections),))
 
-        # run on non-maximum supression
         boxes = np.array([d.tlwh for d in detections])
         scores = np.array([d.confidence for d in detections])
 
-        # update tracker
         self.tracker.predict()
         self.tracker.update(detections, classes)
 
-        # output bbox identities
         outputs = []
         for track in self.tracker.tracks:
             if not track.is_confirmed() or track.time_since_update > 1:

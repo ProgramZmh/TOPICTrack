@@ -14,8 +14,7 @@ class Timer(object):
         self.duration = 0.0
 
     def tic(self):
-        # using time.time instead of time.clock because time time.clock
-        # does not normalize for multithreading
+       
         self.start_time = time.time()
 
     def toc(self, average=True):

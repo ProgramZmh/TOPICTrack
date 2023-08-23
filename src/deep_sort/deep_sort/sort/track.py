@@ -1,4 +1,4 @@
-# vim: expandtab:ts=4:sw=4
+
 
 
 class TrackState:
@@ -76,7 +76,7 @@ class Track:
         self.miss_nums = 0
 
         self.state = TrackState.Confirmed
-        # self.state = TrackState.Tentative
+        
         self.features = []
         if feature is not None:
             self.features.append(feature)
@@ -153,13 +153,12 @@ class Track:
         else:
             self.mean, self.covariance = kf.update(
                 self.mean, self.covariance, self.mean[:4])
-            # self.features.append(detection.feature)
+          
 
             self.hits += 1
 
     def mark_missed(self):
-        """Mark this track as missed (no association at the current time step).
-        """
+        
         if self.state == TrackState.Tentative:
             self.state = TrackState.Deleted
         elif self.time_since_update >= self._max_age:

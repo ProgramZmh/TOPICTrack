@@ -1,25 +1,11 @@
-# vim: expandtab:ts=4:sw=4
+
 from __future__ import absolute_import
 import numpy as np
 from trackers.deepsort_tracker import linear_assignment
 
 
 def iou(bbox, candidates):
-    """Computer intersection over union.
-    Parameters
-    ----------
-    bbox : ndarray
-        A bounding box in format `(top left x, top left y, width, height)`.
-    candidates : ndarray
-        A matrix of candidate bounding boxes (one per row) in the same format
-        as `bbox`.
-    Returns
-    -------
-    ndarray
-        The intersection over union in [0, 1] between the `bbox` and each
-        candidate. A higher score means a larger fraction of the `bbox` is
-        occluded by the candidate.
-    """
+    
     bbox_tl, bbox_br = bbox[:2], bbox[:2] + bbox[2:]
     candidates_tl = candidates[:, :2]
     candidates_br = candidates[:, :2] + candidates[:, 2:]

@@ -14,34 +14,10 @@ VIDEO_SETS = {'train': range(21), 'test': range(29),
 CREATE_HALF_LABEL = True
 DEBUG = False
 
-'''
-#Values    Name      Description
-----------------------------------------------------------------------------
-   1    frame        Frame within the sequence where the object appearers
-   1    track id     Unique tracking id of this object within this sequence
-   1    type         Describes the type of object: 'Car', 'Van', 'Truck',
-                     'Pedestrian', 'Person_sitting', 'Cyclist', 'Tram',
-                     'Misc' or 'DontCare'
-   1    truncated    Integer (0,1,2) indicating the level of truncation.
-                     Note that this is in contrast to the object detection
-                     benchmark where truncation is a float in [0,1].
-   1    occluded     Integer (0,1,2,3) indicating occlusion state:
-                     0 = fully visible, 1 = partly occluded
-                     2 = largely occluded, 3 = unknown
-   1    alpha        Observation angle of object, ranging [-pi..pi]
-   4    bbox         2D bounding box of object in the image (0-based index):
-                     contains left, top, right, bottom pixel coordinates
-   3    dimensions   3D object dimensions: height, width, length (in meters)
-   3    location     3D object location x,y,z in camera coordinates (in meters)
-   1    rotation_y   Rotation ry around Y-axis in camera coordinates [-pi..pi]
-   1    score        Only for results: Float, indicating confidence in
-                     detection, needed for p/r curves, higher is better.
-'''
+
 
 def project_to_image(pts_3d, P):
-  # pts_3d: n x 3
-  # P: 3 x 4
-  # return: n x 2
+  
   pts_3d_homo = np.concatenate(
     [pts_3d, np.ones((pts_3d.shape[0], 1), dtype=np.float32)], axis=1)
   pts_2d = np.dot(P, pts_3d_homo.transpose(1, 0)).transpose(1, 0)
@@ -108,7 +84,7 @@ if __name__ == '__main__':
 
       if split == 'test':
         continue
-      # 0 -1 DontCare -1 -1 -10.000000 219.310000 188.490000 245.500000 218.560000 -1000.000000 -1000.000000 -1000.000000 -10.000000 -1.000000 -1.000000 -1.000000
+     
       ann_path = DATA_PATH + 'label_02/{}.txt'.format(video_name)
       anns = open(ann_path, 'r')
       
@@ -156,8 +132,7 @@ if __name__ == '__main__':
         
         ret['annotations'].append(ann)
       
-    print("# images: ", len(ret['images']))
-    print("# annotations: ", len(ret['annotations']))
+  
     out_dir = '{}/annotations/'.format(DATA_PATH)
     if not os.path.exists(out_dir):
       os.mkdir(out_dir)

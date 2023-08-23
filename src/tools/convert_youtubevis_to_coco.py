@@ -1,12 +1,12 @@
 import json
 import os
 
-split = 'val' # 'train' 'val'
+split = 'val'
 input_path = 'your path'
 out_path = 'your path'
 if __name__ == '__main__':
 
-    f = json.load(open(input_path + '/{}.json'.format(split)))  # f[]dict_keys(['info', 'licenses', 'videos', 'categories', 'annotations'])
+    f = json.load(open(input_path + '/{}.json'.format(split))) 
     out = {'images': [], 'annotations': [],
            'categories': [], 'videos': []}
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
                        'category_id': item['category_id'],
                        'image_id': image_id_map['{}_{}'.format(item['video_id'], frame_id+1)],
                        'track_id': track_id,
-                       'bbox': bbox,  # x1, y1, w, h
+                       'bbox': bbox, 
                        'segmentation': item['segmentations'][frame_id],
                        'global_track_id': item['id']}
                 out['annotations'].append(ann)

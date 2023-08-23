@@ -6,9 +6,7 @@ from scipy.optimize import linear_sum_assignment
 INFTY_COST = 999
 
 def iou_batch(bboxes1, bboxes2):
-    """
-    From SORT: Computes IOU between two bboxes in the form [x1,y1,x2,y2]
-    """
+  
     bboxes2 = np.expand_dims(bboxes2, 0)
     bboxes1 = np.expand_dims(bboxes1, 1)
 
@@ -30,13 +28,7 @@ def iou_batch(bboxes1, bboxes2):
 
 
 def giou_batch(bboxes1, bboxes2):
-    """
-    :param bbox_p: predict of bbox(N,4)(x1,y1,x2,y2)
-    :param bbox_g: groundtruth of bbox(N,4)(x1,y1,x2,y2)
-    :return:
-    """
-    # for details should go to https://arxiv.org/pdf/1902.09630.pdf
-    # ensure predict's bbox form
+   
     bboxes2 = np.expand_dims(bboxes2, 0)
     bboxes1 = np.expand_dims(bboxes1, 1)
 
@@ -64,22 +56,15 @@ def giou_batch(bboxes1, bboxes2):
     assert (wc > 0).all() and (hc > 0).all()
     area_enclose = wc * hc
     giou = iou - (area_enclose - wh) / area_enclose
-    giou = (giou + 1.0) / 2.0  # resize from (-1,1) to (0,1)
+    giou = (giou + 1.0) / 2.0  
     return giou
 
 
 def diou_batch(bboxes1, bboxes2):
-    """
-    :param bbox_p: predict of bbox(N,4)(x1,y1,x2,y2)
-    :param bbox_g: groundtruth of bbox(N,4)(x1,y1,x2,y2)
-    :return:
-    """
-    # for details should go to https://arxiv.org/pdf/1902.09630.pdf
-    # ensure predict's bbox form
+   
     bboxes2 = np.expand_dims(bboxes2, 0)
     bboxes1 = np.expand_dims(bboxes1, 1)
 
-    # calculate the intersection box
     xx1 = np.maximum(bboxes1[..., 0], bboxes2[..., 0])
     yy1 = np.maximum(bboxes1[..., 1], bboxes2[..., 1])
     xx2 = np.minimum(bboxes1[..., 2], bboxes2[..., 2])
@@ -110,21 +95,14 @@ def diou_batch(bboxes1, bboxes2):
     outer_diag = (xxc2 - xxc1) ** 2 + (yyc2 - yyc1) ** 2
     diou = iou - inner_diag / outer_diag
 
-    return (diou + 1) / 2.0  # resize from (-1,1) to (0,1)
+    return (diou + 1) / 2.0  
 
 
 def ciou_batch(bboxes1, bboxes2):
-    """
-    :param bbox_p: predict of bbox(N,4)(x1,y1,x2,y2)
-    :param bbox_g: groundtruth of bbox(N,4)(x1,y1,x2,y2)
-    :return:
-    """
-    # for details should go to https://arxiv.org/pdf/1902.09630.pdf
-    # ensure predict's bbox form
+   
     bboxes2 = np.expand_dims(bboxes2, 0)
     bboxes1 = np.expand_dims(bboxes1, 1)
 
-    # calculate the intersection box
     xx1 = np.maximum(bboxes1[..., 0], bboxes2[..., 0])
     yy1 = np.maximum(bboxes1[..., 1], bboxes2[..., 1])
     xx2 = np.minimum(bboxes1[..., 2], bboxes2[..., 2])
@@ -159,7 +137,6 @@ def ciou_batch(bboxes1, bboxes2):
     w2 = bboxes2[..., 2] - bboxes2[..., 0]
     h2 = bboxes2[..., 3] - bboxes2[..., 1]
 
-    # prevent dividing over zero. add one pixel shift
     h2 = h2 + 1.0
     h1 = h1 + 1.0
     arctan = np.arctan(w2 / h2) - np.arctan(w1 / h1)
@@ -168,7 +145,7 @@ def ciou_batch(bboxes1, bboxes2):
     alpha = v / (S + v)
     ciou = iou - inner_diag / outer_diag - alpha * v
 
-    return (ciou + 1) / 2.0  # resize from (-1,1) to (0,1)
+    return (ciou + 1) / 2.0 
 
 
 def ct_dist(bboxes1, bboxes2):
@@ -190,9 +167,8 @@ def ct_dist(bboxes1, bboxes2):
 
     ct_dist = np.sqrt(ct_dist2)
 
-    # The linear rescaling is a naive version and needs more study
     ct_dist = ct_dist / ct_dist.max()
-    return ct_dist.max() - ct_dist  # resize to (0,1)
+    return ct_dist.max() - ct_dist 
 
 
 def speed_direction_batch(dets, tracks):
@@ -205,7 +181,7 @@ def speed_direction_batch(dets, tracks):
     norm = np.sqrt(dx**2 + dy**2) + 1e-6
     dx = dx / norm
     dy = dy / norm
-    return dy, dx  # size: num_track x num_det
+    return dy, dx  
 
 
 def linear_assignment(cost_matrix):
@@ -213,7 +189,7 @@ def linear_assignment(cost_matrix):
         import lap
 
         _, x, y = lap.lapjv(cost_matrix, extend_cost=True)
-        return np.array([[y[i], i] for i in x if i >= 0])  #
+        return np.array([[y[i], i] for i in x if i >= 0])  
     except ImportError:
         from scipy.optimize import linear_sum_assignment
 
@@ -222,10 +198,7 @@ def linear_assignment(cost_matrix):
 
 
 def associate_detections_to_trackers(detections, trackers, iou_threshold=0.3):
-    """
-    Assigns detections to tracked object (both represented as bounding boxes)
-    Returns 3 lists of matches, unmatched_detections and unmatched_trackers
-    """
+  
     if len(trackers) == 0:
         return (
             np.empty((0, 2), dtype=int),
@@ -253,7 +226,6 @@ def associate_detections_to_trackers(detections, trackers, iou_threshold=0.3):
         if t not in matched_indices[:, 1]:
             unmatched_trackers.append(t)
 
-    # filter out matched with low IOU
     matches = []
     for m in matched_indices:
         if iou_matrix[m[0], m[1]] < iou_threshold:
@@ -273,15 +245,14 @@ def compute_aw_new_metric(emb_cost, w_association_emb, max_diff=0.5):
     w_emb = np.full_like(emb_cost, w_association_emb)
     w_emb_bonus = np.full_like(emb_cost, 0)
 
-    # Needs two columns at least to make sense to boost
     if emb_cost.shape[1] >= 2:
-        # Across all rows
+      
         for idx in range(emb_cost.shape[0]):
             inds = np.argsort(-emb_cost[idx])
-            # Row weight is difference between top / second top
+          
             row_weight = min(emb_cost[idx, inds[0]] -
                              emb_cost[idx, inds[1]], max_diff)
-            # Add to row
+         
             w_emb_bonus[idx] += row_weight / 2
 
     if emb_cost.shape[0] >= 2:
@@ -301,17 +272,16 @@ def split_cosine_dist(dets, trks, affinity_thresh=0.55, pair_diff_thresh=0.6, ha
     for i in range(len(dets)):
         for j in range(len(trks)):
 
-            # shape = 3x3
             cos_d = 1 - sp.distance.cdist(dets[i], trks[j], "cosine")
-            patch_affinity = np.max(cos_d, axis=0)  # shape = [3,]
-            # exp16 - Using Hard threshold
+            patch_affinity = np.max(cos_d, axis=0)  
+          
             if hard_thresh:
                 if len(np.where(patch_affinity > affinity_thresh)[0]) != len(patch_affinity):
                     cos_dist[i, j] = 0
                 else:
                     cos_dist[i, j] = np.max(patch_affinity)
             else:
-                # can experiment with mean too (max works slightly better)
+                
                 cos_dist[i, j] = np.max(patch_affinity)
 
     return cos_dist
@@ -346,79 +316,37 @@ def _nn_res_recons_cosine_distance(x, y, tmp=100, data_is_normalized=False):
     if not data_is_normalized:
         x = np.asarray(x) / np.linalg.norm(x, axis=1, keepdims=True)
         y = np.asarray(y) / np.linalg.norm(y, axis=1, keepdims=True)
-        # ftrk = F.softmax(ftrk, dim=1)
-        # fdet = F.softmax(fdet, dim=1)
-        # ftrk = F.normalize(ftrk, dim=1)
-        # fdet = F.normalize(fdet, dim=1)
+       
         
-    ftrk = torch.from_numpy(np.asarray(x)).half().cuda()  # (5,128)
-    fdet = torch.from_numpy(np.asarray(y)).half().cuda()  # (10,128)
+    ftrk = torch.from_numpy(np.asarray(x)).half().cuda() 
+    fdet = torch.from_numpy(np.asarray(y)).half().cuda()  
         
-    aff = torch.mm(ftrk, fdet.transpose(0, 1))  # (5,10)
+    aff = torch.mm(ftrk, fdet.transpose(0, 1))
     aff_td = F.softmax(tmp*aff, dim=1)
     aff_dt = F.softmax(tmp*aff, dim=0).transpose(0, 1)
 
-    # 重构外观特征
-    res_recons_ftrk = torch.mm(aff_td, fdet)  # (5,128)
-    res_recons_fdet = torch.mm(aff_dt, ftrk)  # (10,128)
-    # res_recons_ftrk = F.normalize(res_recons_ftrk, dim=1)
-    # res_recons_fdet = F.normalize(res_recons_fdet, dim=1)
-
-    # 残差 t x (c+1)
-    # 方案1：
-    # recons_ftrk = ftrk + res_recons_ftrk
-    # recons_fdet = fdet + res_recons_fdet
-    # recons_ftrk_norm = F.normalize(recons_ftrk, dim=1)
-    # recons_fdet_norm = F.normalize(recons_fdet, dim=1)
-    # # 计算余弦距离
-    # distances = 1 - torch.mm(recons_ftrk_norm,
-    #                          recons_fdet_norm.transpose(0, 1))
-
-    # 方案2：
-    # s1 =torch.mm(ftrk, fdet.transpose(0, 1))
-    # s2 = torch.mm(res_recons_ftrk,res_recons_fdet.transpose(0, 1))
-    
-    # print("ftrk:[max:%.2f,min:%.2f]" %(ftrk.max(),ftrk.min()),end="\t")
-    # print("fdet:[max:%.2f,min:%.2f]" %(fdet.max(),fdet.min()) ,end="\t")
-    # print("res_recons_ftrk:[max:%.2f,min:%.2f]" %(res_recons_ftrk.max(),res_recons_ftrk.min()) ,end="\t")
-    # print("res_recons_fdet:[max:%.2f,min:%.2f]" %(res_recons_fdet.max(),res_recons_fdet.min()) ,end="\t")
-    # print("s1:[max:%.2f,min:%.2f]" %(s1.max(),s1.min()) ,end="\t")
-    # print("s2:[max:%.2f,min:%.2f]" %(s2.max(),s2.min()) ,end="\t")
+  
+    res_recons_ftrk = torch.mm(aff_td, fdet)  
+    res_recons_fdet = torch.mm(aff_dt, ftrk)  
+   
     
     sim = (torch.mm(ftrk, fdet.transpose(0, 1)) + torch.mm(res_recons_ftrk,
                                                            res_recons_fdet.transpose(0, 1))) / 2
     distances = 1-sim
-    # print("distances:[max:%.2f,min:%.2f]" %(distances.max(),distances.min()) ,end="\t")
-    # distances_1 = 1 - torch.mm(ftrk, fdet.transpose(0, 1))
-    # distances_2 = 1 - torch.mm(res_recons_ftrk,
-    #                            res_recons_fdet.transpose(0, 1))
-    # distances = 0.5 * (distances_1 + distances_2)
-
-    # 方案3：
-    # distances_1 = torch.mm(ftrk, fdet.transpose(0, 1))
-    # distances_2 = torch.mm(res_recons_ftrk, res_recons_fdet.transpose(0, 1))
-
-    # distances = 1 - 0.5 * (distances_1 + distances_2)
+   
 
     distances = distances.detach().cpu().numpy()
     sim = sim.detach().cpu().numpy()
-    # print('distances: ', distances)
+   
     return distances, sim
 
 def cal_cost_matrix(dets_embs, trk_embs, metric):
-    # features = np.array([d.feature for d in dets])
-    # targets = np.array([t.id for t in trackers if t.hits >= min_hits])
-    # cost_matrix = metric.distance(features, targets)
-    print('metric: ', metric)
+  
     if metric == 'res_recons':
-    # 法1：外观重建，用外观更新
         cost_matrix, sim_matrix = _nn_res_recons_cosine_distance(
             trk_embs, dets_embs, data_is_normalized=False)
     else:
-        # 法2：余弦
         cost_matrix, sim_matrix = _cosine_distance(trk_embs, dets_embs)
-        print("cosine cost_matrix.min:%.2f, max:%.2f, mean:%.2f, std:%.2f" %
-            (cost_matrix.min(), cost_matrix.max(), cost_matrix.mean(), cost_matrix.std()))
     return cost_matrix, sim_matrix
 def filter_pairs(cost_matrix, gate):
     cost_matrix[cost_matrix > gate] = INFTY_COST
@@ -430,7 +358,6 @@ def associate(
     trackers,
     det_embs,
     trk_embs,
-    # emb_cost,
     iou_threshold,
     velocities,
     previous_obs,
@@ -443,17 +370,13 @@ def associate(
     track_indices, tracks_info, gate, metric
 ):
     if len(trackers) == 0:
-        # !// 2、3参数顺序调换
+
         return (
             np.empty((0, 2), dtype=int),
             np.empty((0, 5), dtype=int),
             np.arange(len(detections)),
         )
-        # return (
-        #     np.empty((0, 2), dtype=int),
-        #     np.arange(len(detections)),
-        #     np.empty((0, 5), dtype=int),
-        # )
+       
 
     Y, X = speed_direction_batch(detections, previous_obs)
     inertia_Y, inertia_X = velocities[:, 0], velocities[:, 1]
@@ -470,53 +393,18 @@ def associate(
     iou_matrix = iou_batch(detections, trackers)
     scores = np.repeat(
         detections[:, -1][:, np.newaxis], trackers.shape[0], axis=1)
-    # iou_matrix = iou_matrix * scores # a trick sometiems works, we don't encourage this
+ 
     valid_mask = np.repeat(valid_mask[:, np.newaxis], X.shape[1], axis=1)
 
     angle_diff_cost = (valid_mask * diff_angle) * vdc_weight
     angle_diff_cost = angle_diff_cost.T
     angle_diff_cost = angle_diff_cost * scores
 
-    # !// 新增的计算emb_cost
-    # emb_cost = None
-    # if not emb_off:
-    #     if grid_off:
-    #         emb_cost = None if (
-    #             trk_embs.shape[0] == 0 or det_embs.shape[0] == 0) else det_embs @ trk_embs.T
-    #     else:
-    #         emb_cost = split_cosine_dist(det_embs, trk_embs)
-    # print("emb cost: \t max:%.2f; min:%.2f" % (emb_cost.max(), emb_cost.min()))
-    # # 保存
-    # import os
-    # file_path = 'emb_cost.txt'
-    # emb_avg, emb_std = emb_cost.mean(), emb_cost.std()
-    # emb_max, emb_min = emb_cost.max(), emb_cost.min()
-    # emb_save = np.asarray([emb_avg, emb_std, emb_max, emb_min]).reshape(1, -1)
-    # if os.path.isfile(file_path):
-    #     data = np.loadtxt(file_path)
-    #     if data.ndim == 1:
-    #         data = data.reshape(1, -1)
-    #     emb_save = np.concatenate((data, emb_save), axis=0)
-    # np.savetxt(file_path, emb_save)
+   
     cost_matrix, emb_cost = cal_cost_matrix(det_embs, trk_embs, metric)
 
-    # 用外观过滤运动的, 不用双轮使用下面代码
-    # cost_matrix = filter_pairs(cost_matrix, gate)
-    # cost_matrix[cost_matrix<INFTY_COST] = 1
-    # cost_matrix[cost_matrix==INFTY_COST] = 0 # 过滤
-    
-    # cost_matrix = cost_matrix.T
-    # emb_cost = emb_cost.T
-    # iou_matrix = iou_matrix * cost_matrix
+    emb_cost = emb_cost.T
 
-    # 用运动过滤外观
-    # iou_matrix = filter_pairs(iou_matrix, gate)
-    # iou_matrix[iou_matrix<INFTY_COST] = 1
-    # iou_matrix[iou_matrix==INFTY_COST] = 0 # 过滤
-    
-    # cost_matrix = cost_matrix.T
-    # emb_cost = emb_cost.T
-    # iou_matrix = iou_matrix * cost_matrix
 
 
 
@@ -525,14 +413,13 @@ def associate(
         if a.sum(1).max() == 1 and a.sum(0).max() == 1:
             matched_indices = np.stack(np.where(a), axis=1)
         else:
-            # !// 新增的融入emb_cost的计算
-            # !// ocsort中只是算了-(iou_matrix+angle_diff_cost)两项
+         
             if emb_cost is None:
                 emb_cost = 0
             else:
-                # emb_cost[iou_matrix <= 0.3] = 0
+          
                 pass
-            # print('w_assoc_emb1: ', w_assoc_emb)
+          
             if not aw_off:
                 w_matrix = compute_aw_new_metric(
                     emb_cost, w_assoc_emb, aw_param)
@@ -540,8 +427,7 @@ def associate(
             else:
                 emb_cost *= w_assoc_emb
             final_cost = -(iou_matrix + angle_diff_cost+emb_cost)
-            # final_cost = -(iou_matrix + angle_diff_cost)
-            # final_cost = -(iou_matrix + angle_diff_cost + emb_cost)
+           
             matched_indices = linear_assignment(final_cost)
     else:
         matched_indices = np.empty(shape=(0, 2))
@@ -555,33 +441,30 @@ def associate(
         if t not in matched_indices[:, 1]:
             unmatched_trackers.append(t)
 
-    # filter out matched with low IOU
+  
     matches = []
     for m in matched_indices:
         if iou_matrix[m[0], m[1]] < iou_threshold:
             unmatched_detections.append(m[0])
             unmatched_trackers.append(m[1])
         else:
-            # !// 引入运动强度
+          
             track_idx = track_indices[m[1]]
-            m_ = np.array([m[1], m[0], tracks_info[track_idx]])  # 匹配、运动强度
+            m_ = np.array([m[1], m[0], tracks_info[track_idx]]) 
             matches.append(m_.reshape(1, 3))
-            # matches.append(m.reshape(1, 2))
+          
     if len(matches) == 0:
-        # !// 3列
+    
         matches = np.empty((0, 3), dtype=int)
-        # matches = np.empty((0, 2), dtype=int)
+     
     else:
         matches = np.concatenate(matches, axis=0)
 
-    # !// 缺少运动标记
     if matches.shape[0]:
         matches = np.hstack(
             (matches, np.zeros(matches.shape[0]).reshape(-1, 1)))
 
-    # !// 2、3参数顺序调换
     return (matches, np.array(unmatched_trackers), np.array(unmatched_detections))
-    # return matches, np.array(unmatched_detections), np.array(unmatched_trackers)
 
 
 def associate_kitti(detections, trackers, det_cates, iou_threshold, velocities, previous_obs, vdc_weight):
@@ -650,7 +533,6 @@ def associate_kitti(detections, trackers, det_cates, iou_threshold, velocities, 
         if t not in matched_indices[:, 1]:
             unmatched_trackers.append(t)
 
-    # filter out matched with low IOU
     matches = []
     for m in matched_indices:
         if iou_matrix[m[0], m[1]] < iou_threshold:

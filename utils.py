@@ -7,11 +7,11 @@ import shutil
 
 def write_results_no_score(filename, results):
     """Writes results in MOT style to filename."""
-    save_format = "{frame},{id},{x1},{y1},{w},{h},-1,-1,-1,-1,{f},{m}\n"
+    save_format = "{frame},{id},{x1},{y1},{w},{h},-1,-1,-1,-1\n"
     print("save results path:",filename)
     with open(filename, "w") as f:
-        for frame_id, tlwhs, track_ids, flage, motion in results:
-            for tlwh, track_id, f1, m1 in zip(tlwhs, track_ids, flage, motion):
+        for frame_id, tlwhs, track_ids in results:
+            for tlwh, track_id in zip(tlwhs, track_ids):
                 if track_id < 0:
                     continue
                 x1, y1, w, h = tlwh
@@ -21,43 +21,28 @@ def write_results_no_score(filename, results):
                     x1=round(x1, 1),
                     y1=round(y1, 1),
                     w=round(w, 1),
-                    h=round(h, 1),
-                    f=f1,
-                    m=m1
+                    h=round(h, 1)
                 )
                 f.write(line)
 
 
 def filter_targets(online_targets, aspect_ratio_thresh, min_box_area,dataset_):
-    """Removes targets not meeting threshold criteria.
-
-    Returns (list of tlwh, list of ids).
-    """
+    
     online_tlwhs = []
     online_ids = []
-    online_ARR_MON = []
-    motion = []
+    
     for t in online_targets:
         tlwh = [t[0], t[1], t[2] - t[0], t[3] - t[1]]
         tid = t[4]
-        flag_ARR_MON = t[5]
-        m = t[6]
         vertical = tlwh[2] / tlwh[3] > aspect_ratio_thresh
-        # TODO: 数据集名字超参数控制
         if dataset_ in ['bee', 'gmot']:
             online_tlwhs.append(tlwh)
             online_ids.append(tid)
-            online_ARR_MON.append(flag_ARR_MON)
-            motion.append(m)
         else:
             if tlwh[2] * tlwh[3] > min_box_area and not vertical:
                 online_tlwhs.append(tlwh)
                 online_ids.append(tid)
-                online_ARR_MON.append(flag_ARR_MON)
-                motion.append(m)
-        # online_tlwhs.append(tlwh)
-        # online_ids.append(tid)
-    return online_tlwhs, online_ids, online_ARR_MON, motion
+    return online_tlwhs, online_ids
 
 
 def dti(txt_path, save_path, n_min=30, n_dti=20):
@@ -74,9 +59,9 @@ def dti(txt_path, save_path, n_min=30, n_dti=20):
                 f.write(line)
 
     seq_txts = sorted(glob.glob(os.path.join(txt_path, "*.txt")))
-    # breakpoint()
+
     for seq_txt in seq_txts:
-        # To better play along with windows paths
+ 
         seq_name = seq_txt.replace("\\", "/").split("/")[-1]
         seq_data = np.loadtxt(seq_txt, dtype=np.float64, delimiter=",")
         min_id = int(np.min(seq_data[:, 1]))
@@ -99,7 +84,6 @@ def dti(txt_path, save_path, n_min=30, n_dti=20):
                         left_frame = frames[i - 1]
                     else:
                         left_frame = frames[i]
-                    # disconnected track interpolation
                     if 1 < right_frame - left_frame < n_dti:
                         num_bi = int(right_frame - left_frame - 1)
                         right_bbox = tracklet[i, 2:6]

@@ -108,10 +108,7 @@ if __name__ == '__main__':
     summary = mh.compute_many(
         accs, names=names,
         metrics=metrics, generate_overall=True)
-    # summary = mh.compute_many(accs, names=names, metrics=mm.metrics.motchallenge_metrics, generate_overall=True)
-    # print(mm.io.render_summary(
-    #   summary, formatters=mh.formatters,
-    #   namemap=mm.io.motchallenge_metric_names))
+  
     div_dict = {
         'num_objects': ['num_false_positives', 'num_misses',
                         'num_switches', 'num_fragmentations'],

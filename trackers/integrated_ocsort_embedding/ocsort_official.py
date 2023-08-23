@@ -28,16 +28,12 @@ def k_previous_obs(observations, cur_age, k):
 
 
 def convert_bbox_to_z(bbox):
-    """
-    Takes a bounding box in the form [x1,y1,x2,y2] and returns z in the form
-      [x,y,s,r] where x,y is the centre of the box and s is the scale/area and r is
-      the aspect ratio
-    """
+   
     w = bbox[2] - bbox[0]
     h = bbox[3] - bbox[1]
     x = bbox[0] + w / 2.0
     y = bbox[1] + h / 2.0
-    s = w * h  # scale is just area
+    s = w * h 
     r = w / float(h + 1e-6)
     return np.array([x, y, s, r]).reshape((4, 1))
 
@@ -107,11 +103,7 @@ class KalmanBoxTracker(object):
     count = 0
 
     def __init__(self, bbox, delta_t=3, orig=False, emb=None, alpha=0, new_kf=False):
-        """
-        Initialises a tracker using initial bounding box.
-
-        """
-        # define constant velocity model
+        
         if not orig:
             from .kalmanfilter import KalmanFilterNew as KalmanFilter
         else:
@@ -122,7 +114,7 @@ class KalmanBoxTracker(object):
             self.kf = KalmanFilter(dim_x=8, dim_z=4)
             self.kf.F = np.array(
                 [
-                    # x y w h x' y' w' h'
+                    
                     [1, 0, 0, 0, 1, 0, 0, 0],
                     [0, 1, 0, 0, 0, 1, 0, 0],
                     [0, 0, 1, 0, 0, 0, 1, 0],
@@ -145,14 +137,14 @@ class KalmanBoxTracker(object):
             self.kf.P = new_kf_process_noise(w, h)
             self.kf.P[:4, :4] *= 4
             self.kf.P[4:, 4:] *= 100
-            # Process and measurement uncertainty happen in functions
+           
             self.bbox_to_z_func = convert_bbox_to_z_new
             self.x_to_bbox_func = convert_x_to_bbox_new
         else:
             self.kf = KalmanFilter(dim_x=7, dim_z=4)
             self.kf.F = np.array(
                 [
-                    # x  y  s  r  x' y' s'
+              
                     [1, 0, 0, 0, 1, 0, 0],
                     [0, 1, 0, 0, 0, 1, 0],
                     [0, 0, 1, 0, 0, 0, 1],
@@ -171,7 +163,7 @@ class KalmanBoxTracker(object):
                 ]
             )
             self.kf.R[2:, 2:] *= 10.0
-            # give high uncertainty to the unobservable initial velocities
+          
             self.kf.P[4:, 4:] *= 1000.0
             self.kf.P *= 10.0
             self.kf.Q[-1, -1] *= 0.01
@@ -179,9 +171,7 @@ class KalmanBoxTracker(object):
             self.bbox_to_z_func = convert_bbox_to_z
             self.x_to_bbox_func = convert_x_to_bbox
 
-            # Attempt
-            # self.kf.P[2, 2] = 10000
-            # self.kf.R[2, 2] = 10000
+            
 
         self.kf.x[:4] = self.bbox_to_z_func(bbox)
 
@@ -192,16 +182,11 @@ class KalmanBoxTracker(object):
         self.hits = 0
         self.hit_streak = 0
         self.age = 0
-        """
-        NOTE: [-1,-1,-1,-1,-1] is a compromising placeholder for non-observation status, the same for the return of 
-        function k_previous_obs. It is ugly and I do not like it. But to support generate observation array in a 
-        fast and unified way, which you would see below k_observations = np.array([k_previous_obs(...]]), let's bear it for now.
-        """
-        # Used for OCR
-        self.last_observation = np.array([-1, -1, -1, -1, -1])  # placeholder
-        # Used to output track after min_hits reached
+        
+        self.last_observation = np.array([-1, -1, -1, -1, -1])  
+    
         self.history_observations = []
-        # Used for velocity
+  
         self.observations = dict()
         self.velocity = None
         self.delta_t = delta_t
@@ -211,13 +196,11 @@ class KalmanBoxTracker(object):
         self.frozen = False
 
     def update(self, bbox):
-        """
-        Updates the state vector with observed bbox.
-        """
+  
         if bbox is not None:
             self.frozen = False
 
-            if self.last_observation.sum() >= 0:  # no previous observation
+            if self.last_observation.sum() >= 0:  
                 previous_box = None
                 for dt in range(self.delta_t, 0, -1):
                     if self.age - dt in self.observations:
@@ -225,14 +208,9 @@ class KalmanBoxTracker(object):
                         break
                 if previous_box is None:
                     previous_box = self.last_observation
-                """
-                  Estimate the track speed direction with observations \Delta t steps away
-                """
+               
                 self.velocity = speed_direction(previous_box, bbox)
-            """
-              Insert new observations. This is a ugly way to maintain both self.observations
-              and self.history_observations. Bear it for the moment.
-            """
+          
             self.last_observation = bbox
             self.observations[self.age] = bbox
             self.history_observations.append(bbox)
@@ -260,34 +238,29 @@ class KalmanBoxTracker(object):
     def apply_affine_correction(self, affine):
         m = affine[:, :2]
         t = affine[:, 2].reshape(2, 1)
-        # For OCR
+     
         if self.last_observation.sum() > 0:
             ps = self.last_observation[:4].reshape(2, 2).T
             ps = m @ ps + t
             self.last_observation[:4] = ps.T.reshape(-1)
 
-        # Apply to each box in the range of velocity computation
+       
         for dt in range(self.delta_t, -1, -1):
             if self.age - dt in self.observations:
                 ps = self.observations[self.age - dt][:4].reshape(2, 2).T
                 ps = m @ ps + t
                 self.observations[self.age - dt][:4] = ps.T.reshape(-1)
 
-        # Also need to change kf state, but might be frozen
         self.kf.apply_affine_correction(m, t, self.new_kf)
 
     def predict(self):
-        """
-        Advances the state vector and returns the predicted bounding box estimate.
-        """
-        # Don't allow negative bounding boxes
+       
         if self.new_kf:
             if self.kf.x[2] + self.kf.x[6] <= 0:
                 self.kf.x[6] = 0
             if self.kf.x[3] + self.kf.x[7] <= 0:
                 self.kf.x[7] = 0
 
-            # Stop velocity, will update in kf during OOS
             if self.frozen:
                 self.kf.x[6] = self.kf.x[7] = 0
             Q = new_kf_process_noise(self.kf.x[2, 0], self.kf.x[3, 0])
@@ -397,46 +370,41 @@ class OCSort(object):
         else:
             output_results = output_results
             scores = output_results[:, 4] * output_results[:, 5]
-            bboxes = output_results[:, :4]  # x1y1x2y2
+            bboxes = output_results[:, :4]
         dets = np.concatenate(
             (bboxes, np.expand_dims(scores, axis=-1)), axis=1)
         remain_inds = scores > self.det_thresh
         dets = dets[remain_inds]
 
-        # Rescale
         scale = min(img_tensor.shape[2] / img_numpy.shape[0],
                     img_tensor.shape[3] / img_numpy.shape[1])
         dets[:, :4] /= scale
 
-        # Generate embeddings
         dets_embs = np.ones((dets.shape[0], 1))
         if not self.embedding_off and dets.shape[0] != 0:
-            # Shape = (num detections, 3, 512) if grid
-            print('emb111111111')
+          
+           
             dets_embs = self.embedder.compute_embedding(
                 img_numpy, dets[:, :4], tag)
 
-        # CMC
+        
         if not self.cmc_off:
-            print('cmc_off11111')
+          
             transform = self.cmc.compute_affine(img_numpy, dets[:, :4], tag)
             for trk in self.trackers:
                 trk.apply_affine_correction(transform)
 
         trust = (dets[:, 4] - self.det_thresh) / (1 - self.det_thresh)
         af = self.alpha_fixed_emb
-        # From [self.alpha_fixed_emb, 1], goes to 1 as detector is less confident
+       
 
         if not self.dynamic_appr_off:
-            print(111111)
+         
             dets_alpha = af + (1 - af) * (1 - trust)
         else:
-            print(222222)
+         
             dets_alpha = af * np.ones_like(trust)
 
-        # dets_alpha = af + (1 - af) * (1 - trust)
-
-        # get predicted locations from existing trackers.
         trks = np.zeros((len(self.trackers), 5))
         trk_embs = []
         to_del = []
@@ -449,7 +417,7 @@ class OCSort(object):
             else:
                 trk_embs.append(self.trackers[t].get_emb())
         trks = np.ma.compress_rows(np.ma.masked_invalid(trks))
-        # Shape = (num_trackers, 3, 512) if grid
+        
         trk_embs = np.array(trk_embs)
         for t in reversed(to_del):
             self.trackers.pop(t)
@@ -491,15 +459,11 @@ class OCSort(object):
             left_trks = last_boxes[unmatched_trks]
             left_trks_embs = trk_embs[unmatched_trks]
 
-            # TODO: maybe use embeddings here
+          
             iou_left = self.asso_func(left_dets, left_trks)
             iou_left = np.array(iou_left)
             if iou_left.max() > self.iou_threshold:
-                """
-                NOTE: by using a lower threshold, e.g., self.iou_threshold - 0.1, you may
-                get a higher performance especially on MOT17/MOT20 datasets. But we keep it
-                uniform here for simplicity
-                """
+               
                 rematched_indices = linear_assignment(-iou_left)
 
                 to_remove_det_indices = []
@@ -522,7 +486,6 @@ class OCSort(object):
         for m in unmatched_trks:
             self.trackers[m].update(None)
 
-        # create and initialise new trackers for unmatched detections
         for i in unmatched_dets:
             trk = KalmanBoxTracker(
                 dets[i, :], delta_t=self.delta_t, emb=dets_embs[i], alpha=dets_alpha[i], new_kf=not self.new_kf_off
@@ -539,10 +502,10 @@ class OCSort(object):
                 """
                 d = trk.last_observation[:4]
             if (trk.time_since_update < 1) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):
-                # +1 as MOT benchmark requires positive
+               
                 ret.append(np.concatenate((d, [trk.id + 1])).reshape(1, -1))
             i -= 1
-            # remove dead tracklet
+          
             if trk.time_since_update > self.max_age:
                 self.trackers.pop(i)
         if len(ret) > 0:

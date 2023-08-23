@@ -27,20 +27,19 @@ class Evaluator(object):
         self.acc = mm.MOTAccumulator(auto_id=True)
 
     def eval_frame(self, frame_id, trk_tlwhs, trk_ids, rtn_events=False):
-        # results
+      
         trk_tlwhs = np.copy(trk_tlwhs)
         trk_ids = np.copy(trk_ids)
 
-        # gts
+       
         gt_objs = self.gt_frame_dict.get(frame_id, [])
         gt_tlwhs, gt_ids = unzip_objs(gt_objs)[:2]
 
-        # ignore boxes
+        
         ignore_objs = self.gt_ignore_frame_dict.get(frame_id, [])
         ignore_tlwhs = unzip_objs(ignore_objs)[0]
 
 
-        # remove ignored results
         keep = np.ones(len(trk_tlwhs), dtype=bool)
         iou_distance = mm.distances.iou_matrix(ignore_tlwhs, trk_tlwhs, max_iou=0.5)
         if len(iou_distance) > 0:
@@ -54,14 +53,12 @@ class Evaluator(object):
             trk_tlwhs = trk_tlwhs[keep]
             trk_ids = trk_ids[keep]
 
-        # get distance matrix
         iou_distance = mm.distances.iou_matrix(gt_tlwhs, trk_tlwhs, max_iou=0.5)
 
-        # acc
         self.acc.update(gt_ids, trk_ids, iou_distance)
 
         if rtn_events and iou_distance.size > 0 and hasattr(self.acc, 'last_mot_events'):
-            events = self.acc.last_mot_events  # only supported by https://github.com/longcw/py-motmetrics
+            events = self.acc.last_mot_events 
         else:
             events = None
         return events

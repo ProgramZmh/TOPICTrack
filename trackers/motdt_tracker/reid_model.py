@@ -8,26 +8,24 @@ import pickle
 import os
 from torch.nn.modules import CrossMapLRN2d as SpatialCrossMapLRN
 
-# from torch.legacy.nn import SpatialCrossMapLRN as SpatialCrossMapLRNOld
+
 from torch.autograd import Function, Variable
 from torch.nn import Module
 
 
 def clip_boxes(boxes, im_shape):
-    """
-    Clip boxes to image boundaries.
-    """
+  
     boxes = np.asarray(boxes)
     if boxes.shape[0] == 0:
         return boxes
     boxes = np.copy(boxes)
-    # x1 >= 0
+
     boxes[:, 0::4] = np.maximum(np.minimum(boxes[:, 0::4], im_shape[1] - 1), 0)
-    # y1 >= 0
+ 
     boxes[:, 1::4] = np.maximum(np.minimum(boxes[:, 1::4], im_shape[0] - 1), 0)
-    # x2 < im_shape[1]
+   
     boxes[:, 2::4] = np.maximum(np.minimum(boxes[:, 2::4], im_shape[1] - 1), 0)
-    # y2 < im_shape[0]
+   
     boxes[:, 3::4] = np.maximum(np.minimum(boxes[:, 3::4], im_shape[0] - 1), 0)
     return boxes
 
@@ -77,48 +75,19 @@ def load_net(fname, net, prefix="", load_state_dict=False):
         return epoch, state_dicts
 
 
-# class SpatialCrossMapLRNFunc(Function):
 
-#     def __init__(self, size, alpha=1e-4, beta=0.75, k=1):
-#         self.size = size
-#         self.alpha = alpha
-#         self.beta = beta
-#         self.k = k
-
-#     def forward(self, input):
-#         self.save_for_backward(input)
-#         self.lrn = SpatialCrossMapLRNOld(self.size, self.alpha, self.beta, self.k)
-#         self.lrn.type(input.type())
-#         return self.lrn.forward(input)
-
-#     def backward(self, grad_output):
-#         input, = self.saved_tensors
-#         return self.lrn.backward(input, grad_output)
-
-
-# # use this one instead
-# class SpatialCrossMapLRN(Module):
-#     def __init__(self, size, alpha=1e-4, beta=0.75, k=1):
-#         super(SpatialCrossMapLRN, self).__init__()
-#         self.size = size
-#         self.alpha = alpha
-#         self.beta = beta
-#         self.k = k
-
-#     def forward(self, input):
-#         return SpatialCrossMapLRNFunc(self.size, self.alpha, self.beta, self.k)(input)
 
 
 class Inception(nn.Module):
     def __init__(self, in_planes, n1x1, n3x3red, n3x3, n5x5red, n5x5, pool_planes):
         super(Inception, self).__init__()
-        # 1x1 conv branch
+  
         self.b1 = nn.Sequential(
             nn.Conv2d(in_planes, n1x1, kernel_size=1),
             nn.ReLU(True),
         )
 
-        # 1x1 conv -> 3x3 conv branch
+   
         self.b2 = nn.Sequential(
             nn.Conv2d(in_planes, n3x3red, kernel_size=1),
             nn.ReLU(True),
@@ -126,7 +95,7 @@ class Inception(nn.Module):
             nn.ReLU(True),
         )
 
-        # 1x1 conv -> 5x5 conv branch
+  
         self.b3 = nn.Sequential(
             nn.Conv2d(in_planes, n5x5red, kernel_size=1),
             nn.ReLU(True),
@@ -134,7 +103,7 @@ class Inception(nn.Module):
             nn.ReLU(True),
         )
 
-        # 3x3 pool -> 1x1 conv branch
+     
         self.b4 = nn.Sequential(
             nn.MaxPool2d(3, stride=1, padding=1),
             nn.Conv2d(in_planes, pool_planes, kernel_size=1),
@@ -201,7 +170,7 @@ class Model(nn.Module):
         self.feat_conv = GoogLeNet()
         self.conv_input_feat = nn.Conv2d(self.feat_conv.output_channels, 512, 1)
 
-        # part net
+     
         self.conv_att = nn.Conv2d(512, self.n_parts, 1)
 
         for i in range(self.n_parts):

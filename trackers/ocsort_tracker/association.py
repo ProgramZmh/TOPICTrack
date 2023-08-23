@@ -25,13 +25,7 @@ def iou_batch(bboxes1, bboxes2):
 
 
 def giou_batch(bboxes1, bboxes2):
-    """
-    :param bbox_p: predict of bbox(N,4)(x1,y1,x2,y2)
-    :param bbox_g: groundtruth of bbox(N,4)(x1,y1,x2,y2)
-    :return:
-    """
-    # for details should go to https://arxiv.org/pdf/1902.09630.pdf
-    # ensure predict's bbox form
+   
     bboxes2 = np.expand_dims(bboxes2, 0)
     bboxes1 = np.expand_dims(bboxes1, 1)
 
@@ -57,22 +51,15 @@ def giou_batch(bboxes1, bboxes2):
     assert (wc > 0).all() and (hc > 0).all()
     area_enclose = wc * hc
     giou = iou - (area_enclose - wh) / area_enclose
-    giou = (giou + 1.0) / 2.0  # resize from (-1,1) to (0,1)
+    giou = (giou + 1.0) / 2.0 
     return giou
 
 
 def diou_batch(bboxes1, bboxes2):
-    """
-    :param bbox_p: predict of bbox(N,4)(x1,y1,x2,y2)
-    :param bbox_g: groundtruth of bbox(N,4)(x1,y1,x2,y2)
-    :return:
-    """
-    # for details should go to https://arxiv.org/pdf/1902.09630.pdf
-    # ensure predict's bbox form
+    
     bboxes2 = np.expand_dims(bboxes2, 0)
     bboxes1 = np.expand_dims(bboxes1, 1)
 
-    # calculate the intersection box
     xx1 = np.maximum(bboxes1[..., 0], bboxes2[..., 0])
     yy1 = np.maximum(bboxes1[..., 1], bboxes2[..., 1])
     xx2 = np.minimum(bboxes1[..., 2], bboxes2[..., 2])
@@ -101,21 +88,14 @@ def diou_batch(bboxes1, bboxes2):
     outer_diag = (xxc2 - xxc1) ** 2 + (yyc2 - yyc1) ** 2
     diou = iou - inner_diag / outer_diag
 
-    return (diou + 1) / 2.0  # resize from (-1,1) to (0,1)
+    return (diou + 1) / 2.0  
 
 
 def ciou_batch(bboxes1, bboxes2):
-    """
-    :param bbox_p: predict of bbox(N,4)(x1,y1,x2,y2)
-    :param bbox_g: groundtruth of bbox(N,4)(x1,y1,x2,y2)
-    :return:
-    """
-    # for details should go to https://arxiv.org/pdf/1902.09630.pdf
-    # ensure predict's bbox form
+    
     bboxes2 = np.expand_dims(bboxes2, 0)
     bboxes1 = np.expand_dims(bboxes1, 1)
 
-    # calculate the intersection box
     xx1 = np.maximum(bboxes1[..., 0], bboxes2[..., 0])
     yy1 = np.maximum(bboxes1[..., 1], bboxes2[..., 1])
     xx2 = np.minimum(bboxes1[..., 2], bboxes2[..., 2])
@@ -148,7 +128,6 @@ def ciou_batch(bboxes1, bboxes2):
     w2 = bboxes2[..., 2] - bboxes2[..., 0]
     h2 = bboxes2[..., 3] - bboxes2[..., 1]
 
-    # prevent dividing over zero. add one pixel shift
     h2 = h2 + 1.0
     h1 = h1 + 1.0
     arctan = np.arctan(w2 / h2) - np.arctan(w1 / h1)
@@ -157,7 +136,7 @@ def ciou_batch(bboxes1, bboxes2):
     alpha = v / (S + v)
     ciou = iou - inner_diag / outer_diag - alpha * v
 
-    return (ciou + 1) / 2.0  # resize from (-1,1) to (0,1)
+    return (ciou + 1) / 2.0 
 
 
 def ct_dist(bboxes1, bboxes2):
@@ -179,9 +158,8 @@ def ct_dist(bboxes1, bboxes2):
 
     ct_dist = np.sqrt(ct_dist2)
 
-    # The linear rescaling is a naive version and needs more study
     ct_dist = ct_dist / ct_dist.max()
-    return ct_dist.max() - ct_dist  # resize to (0,1)
+    return ct_dist.max() - ct_dist  
 
 
 def speed_direction_batch(dets, tracks):
@@ -193,7 +171,7 @@ def speed_direction_batch(dets, tracks):
     norm = np.sqrt(dx**2 + dy**2) + 1e-6
     dx = dx / norm
     dy = dy / norm
-    return dy, dx  # size: num_track x num_det
+    return dy, dx  
 
 
 def linear_assignment(cost_matrix):
@@ -201,7 +179,7 @@ def linear_assignment(cost_matrix):
         import lap
 
         _, x, y = lap.lapjv(cost_matrix, extend_cost=True)
-        return np.array([[y[i], i] for i in x if i >= 0])  #
+        return np.array([[y[i], i] for i in x if i >= 0])  
     except ImportError:
         from scipy.optimize import linear_sum_assignment
 
@@ -241,7 +219,6 @@ def associate_detections_to_trackers(detections, trackers, iou_threshold=0.3):
         if t not in matched_indices[:, 1]:
             unmatched_trackers.append(t)
 
-    # filter out matched with low IOU
     matches = []
     for m in matched_indices:
         if iou_matrix[m[0], m[1]] < iou_threshold:
@@ -279,7 +256,7 @@ def associate(detections, trackers, iou_threshold, velocities, previous_obs, vdc
 
     iou_matrix = iou_batch(detections, trackers)
     scores = np.repeat(detections[:, -1][:, np.newaxis], trackers.shape[0], axis=1)
-    # iou_matrix = iou_matrix * scores # a trick sometiems works, we don't encourage this
+   
     valid_mask = np.repeat(valid_mask[:, np.newaxis], X.shape[1], axis=1)
 
     angle_diff_cost = (valid_mask * diff_angle) * vdc_weight
@@ -304,7 +281,6 @@ def associate(detections, trackers, iou_threshold, velocities, previous_obs, vdc
         if t not in matched_indices[:, 1]:
             unmatched_trackers.append(t)
 
-    # filter out matched with low IOU
     matches = []
     for m in matched_indices:
         if iou_matrix[m[0], m[1]] < iou_threshold:
@@ -385,7 +361,6 @@ def associate_kitti(detections, trackers, det_cates, iou_threshold, velocities, 
         if t not in matched_indices[:, 1]:
             unmatched_trackers.append(t)
 
-    # filter out matched with low IOU
     matches = []
     for m in matched_indices:
         if iou_matrix[m[0], m[1]] < iou_threshold:

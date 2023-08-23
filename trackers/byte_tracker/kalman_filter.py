@@ -1,4 +1,4 @@
-# vim: expandtab:ts=4:sw=4
+
 import numpy as np
 import scipy.linalg
 
@@ -41,15 +41,12 @@ class KalmanFilter(object):
     def __init__(self):
         ndim, dt = 4, 1.0
 
-        # Create Kalman filter model matrices.
         self._motion_mat = np.eye(2 * ndim, 2 * ndim)
         for i in range(ndim):
             self._motion_mat[i, ndim + i] = dt
         self._update_mat = np.eye(ndim, 2 * ndim)
 
-        # Motion and observation uncertainty are chosen relative to the current
-        # state estimate. These weights control the amount of uncertainty in
-        # the model. This is a bit hacky.
+       
         self._std_weight_position = 1.0 / 20
         self._std_weight_velocity = 1.0 / 160
 
@@ -120,29 +117,13 @@ class KalmanFilter(object):
         ]
         motion_cov = np.diag(np.square(np.r_[std_pos, std_vel]))
 
-        # mean = np.dot(self._motion_mat, mean)
         mean = np.dot(mean, self._motion_mat.T)
         covariance = np.linalg.multi_dot((self._motion_mat, covariance, self._motion_mat.T)) + motion_cov
 
         return mean, covariance
 
     def project(self, mean, covariance):
-        """Project state distribution to measurement space.
-
-        Parameters
-        ----------
-        mean : ndarray
-            The state's mean vector (8 dimensional array).
-        covariance : ndarray
-            The state's covariance matrix (8x8 dimensional).
-
-        Returns
-        -------
-        (ndarray, ndarray)
-            Returns the projected mean and covariance matrix of the given state
-            estimate.
-
-        """
+        
         std = [
             self._std_weight_position * mean[3],
             self._std_weight_position * mean[3],

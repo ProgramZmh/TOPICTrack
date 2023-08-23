@@ -32,14 +32,10 @@ if __name__ == '__main__':
     print('save_video_path', save_path)
   for seq in sorted(seqs):
     print('seq', seq)
-    # if len(sys.argv) > 2 and not sys.argv[2] in seq:
-    #   continue
+   
     if '.DS_Store' in seq:
       continue
-    # if SAVE_VIDEO:
-    #   fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    #   video = cv2.VideoWriter(
-    #     '{}/{}.avi'.format(save_path, seq),fourcc, 10.0, (1024, 750))
+  
     seq_path = '{}/{}/'.format(GT_PATH, seq)
     if IS_GT:
       ann_path = seq_path + 'gt/gt.txt'
@@ -87,7 +83,4 @@ if __name__ == '__main__':
       draw_bbox(img, image_to_anns[frame_id])
       cv2.imshow('gt', img)
       cv2.waitKey()
-      # if SAVE_VIDEO:
-      #   video.write(img_pred)
-    # if SAVE_VIDEO:
-    #   video.release()
+      

@@ -34,16 +34,16 @@ class CMCComputer:
             self.comp_function = self._affine_sparse_flow
         elif method == "sift":
             self.comp_function = self._affine_sift
-        # Same BoT-SORT CMC arrays
+       
         elif method == "file":
             self.comp_function = self._affine_file
             self.file_affines = {}
-            # Maps from tag name to file name
+           
             self.file_names = {}
 
-            # All the ablation file names
+          
             for f_name in os.listdir("./cache/cmc_files/MOT17_ablation/"):
-                # The tag that'll be passed into compute_affine based on image name
+               
                 tag = f_name.replace("GMC-", "").replace(".txt", "") + "-FRCNN"
                 f_name = os.path.join("./cache/cmc_files/MOT17_ablation/", f_name)
                 self.file_names[tag] = f_name
@@ -52,12 +52,12 @@ class CMCComputer:
                 f_name = os.path.join("./cache/cmc_files/MOT20_ablation/", f_name)
                 self.file_names[tag] = f_name
 
-            # All the test file names
+     
             for f_name in os.listdir("./cache/cmc_files/MOTChallenge/"):
                 tag = f_name.replace("GMC-", "").replace(".txt", "")
                 if "MOT17" in tag:
                     tag = tag + "-FRCNN"
-                # If it's an ablation one (not test) don't overwrite it
+              
                 if tag in self.file_names:
                     continue
                 f_name = os.path.join("./cache/cmc_files/MOTChallenge/", f_name)
@@ -134,13 +134,13 @@ class CMCComputer:
         return A
 
     def _affine_sparse_flow(self, frame, mask, tag):
-        # Initialize
+    
         A = np.eye(2, 3)
 
-        # find the keypoints
+       
         keypoints = cv2.goodFeaturesToTrack(frame, mask=mask, **self.sparse_flow_param)
 
-        # Handle first frame
+       
         if self.prev_img is None:
             self.prev_img = frame
             self.prev_desc = keypoints
@@ -153,7 +153,7 @@ class CMCComputer:
         prev_points = prev_points[status]
         curr_points = matched_kp[status]
 
-        # Find rigid matrix
+      
         if prev_points.shape[0] > self.minimum_features:
             A, _ = cv2.estimateAffinePartial2D(prev_points, curr_points, method=cv2.RANSAC)
         else:

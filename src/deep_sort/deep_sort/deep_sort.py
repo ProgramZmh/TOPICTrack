@@ -17,14 +17,11 @@ class DeepSort(object):
         self.min_confidence = min_confidence
         self.nms_max_overlap = nms_max_overlap
 
-        # self.extractor = Extractor(model_path, use_cuda=use_cuda)
 
         max_cosine_distance = max_dist
         nn_budget = 100
         metric = NearestNeighborDistanceMetric(
             "res_recons", 
-            # "recons",
-            # "cosine",
             max_cosine_distance, nn_budget)
         self.tracker = Tracker(
             metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init)
@@ -39,23 +36,14 @@ class DeepSort(object):
             self.metric, max_iou_distance=self.max_iou_distance, max_age=self.max_age, n_init=self.n_init)
 
     def update(self, opt, bbox_xyxy, cts, previous_cts, confidences, features):
-        # self.height, self.width = ori_img.shape[:2]
-        # generate detections
-        # features = self._get_features(bbox_xywh, ori_img)
+       
         start_time = time.time()
         bbox_tlwh = self._xyxy_to_tlwh(bbox_xyxy)
         detections = [Detection(bbox_tlwh[i], cts[i], previous_cts[i], conf, features[i])
                       for i, conf in enumerate(confidences) if conf > self.min_confidence]
         det_time = time.time()
         det_t = det_time - start_time
-        # holmescao：不要做NMS
-        # run on non-maximum supression
-        # boxes = np.array([d.tlwh for d in detections])
-        # scores = np.array([d.confidence for d in detections])
-        # indices = non_max_suppression(boxes, self.nms_max_overlap, scores)
-        # detections = [detections[i] for i in indices]
-
-        # update tracker
+        
         self.tracker.predict()
         KFpre_time = time.time()
         KFpre_t = KFpre_time - det_time
@@ -63,34 +51,26 @@ class DeepSort(object):
         update_time = time.time()
         update_t = update_time - KFpre_time
 
-        # output bbox identities
-        """"numpy"""
-        # tot_alpha = 0.
+        
         outputs = np.zeros((200,6))
         for i, track in enumerate(self.tracker.tracks):
             if not track.is_confirmed() or track.time_since_update > 0:
                 continue
             x1, y1, x2, y2 = self._tlwh_to_xyxy(track.tlwh)
-            # alpha = metric_gaussian_motion([track], sigma=opt.sigma)
+          
             alpha = 1
 
             outputs[i,:] = np.array([x1, y1, x2, y2, track.track_id, alpha],dtype=np.float32)
             
         outputs = outputs[outputs[:,-2] >0]
 
-        # print("alpha_time: %.4f" % (tot_alpha))
         out_time = time.time()
         out_t = out_time - update_time
         
-        # print("det_t: %.4f | KFpre_t: %.4f | update_t: %.4f | out_t: %.4f" %
-        #       (det_t, KFpre_t, update_t, out_t))
 
         return outputs
 
-    # def 
-    """
-        Convert bbox from xc_yc_w_h to xtl_ytl_w_h
-    """
+   
     @staticmethod
     def _xywh_to_tlwh(bbox_xywh):
         if isinstance(bbox_xywh, np.ndarray):
@@ -119,23 +99,21 @@ class DeepSort(object):
         x, y, w, h = bbox_xywh
         x1 = max(int(x-w/2), 0)
         x2 = int(x+w/2)
-        # x2 = min(int(x+w/2), self.width-1)
+      
         y1 = max(int(y-h/2), 0)
         y2 = int(y+h/2)
-        # y2 = min(int(y+h/2), self.height-1)
+       
         return x1, y1, x2, y2
 
     def _tlwh_to_xyxy(self, bbox_tlwh):
-        """
-            Convert bbox from xtl_ytl_w_h to xc_yc_w_h
-        """
+        
         x, y, w, h = bbox_tlwh
         x1 = max(x, 0)
         x2 = x+w
-        # x2 = min(int(x+w), self.width-1)
+       
         y1 = max(y, 0)
         y2 = y+h
-        # y2 = min(int(y+h), self.height-1)
+     
         return x1, y1, x2, y2
 
     def _get_features(self, bbox_xywh, ori_img):

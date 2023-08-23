@@ -33,11 +33,11 @@ def demo(opt):
     if opt.demo == 'webcam' or \
             opt.demo[opt.demo.rfind('.') + 1:].lower() in video_ext:
         is_video = True
-        # demo on video stream
+       
         cam = cv2.VideoCapture(0 if opt.demo == 'webcam' else opt.demo)
     else:
         is_video = False
-        # Demo on images sequences
+      
         if os.path.isdir(opt.demo):
             image_names = []
             ls = os.listdir(opt.demo)
@@ -48,13 +48,12 @@ def demo(opt):
         else:
             image_names = [opt.demo]
 
-    # Initialize output video
     out = None
     out_name = opt.demo[opt.demo.rfind('/') + 1:]
     if opt.save_video:
         if not os.path.exists('../results'):
             os.mkdir('../results')
-        # fourcc = cv2.VideoWriter_fourcc(*'XVID')
+      
         fourcc = cv2.VideoWriter_fourcc('I', '4', '2', '0')
         save_video_dir = '../results/{}/videos/'.format(
             opt.exp_id + '_' + out_name)
@@ -88,7 +87,7 @@ def demo(opt):
             if cnt < len(image_names):
                 img = cv2.imread(image_names[cnt])
             else:
-                # avi to mp4
+               
                 avi_to_mp4 = "ffmpeg -i %s.avi %s.mp4" % (
                     save_seq_path, save_seq_path)
                 del_avi_file = "rm %s.avi" % (save_seq_path)
@@ -96,64 +95,52 @@ def demo(opt):
                 os.system(del_avi_file)
                 out.release()
                 return
-                # save_and_exit(opt, out, results, out_name)
+              
 
         cnt += 1
 
-        # resize the original video for saving video results
         if opt.resize_video:
             img = cv2.resize(img, (opt.input_w, opt.input_h))
 
-        # skip the first X frames of the video
         if cnt < opt.skip_first:
             continue
 
         if not opt.save_video:
             cv2.imshow('input', img)
 
-        # track or detect the image.
         ret = detector.run(img)
 
-        # log run time
         time_str = '[{}] frame {} |'.format(opt.demo.split("/")[-1], cnt)
         for stat in time_stats:
             time_str = time_str + '{} {:.3f}s |'.format(stat, ret[stat])
         print(time_str)
 
-        # results[cnt] is a list of dicts:
-        #  [{'bbox': [x1, y1, x2, y2], 'tracking_id': id, 'category_id': c, ...}]
         results[cnt] = ret['results']
 
-        # save debug image to video
         save_img_dir = "../results/%s/imgs/" % (opt.exp_id + '_' + out_name)
         if not os.path.exists(save_img_dir):
             os.makedirs(save_img_dir, exist_ok=True)
         if opt.save_video:
-            # get tracklets
+         
             trackers = []
             for tracklet in results[cnt]:
                 trackers.append(list(tracklet['bbox']) +
                                 list([tracklet['score']]) +
                                 list([tracklet['tracking_id']]))
 
-            # save records
             frame_id = cnt-1
             tbd_utils.SaveRecords(trackers, frame_id, results_mot_file_path)
-            # draw tracklets
+          
             last_n_frames_bboxes[frame_id % remain_frame] = len(trackers)
             n_lines = last_n_frames_bboxes.sum()
             img = visualization.DrawTrackers(img, trackers, frame_id,
                                              n_lines, results_mot_file_path)
-            # save video
+           
             out.write(img)
-            # out.write(ret['generic'])
-            # save image
+         
             if not is_video:
                 cv2.imwrite(save_img_dir+'{}.jpg'.format(cnt), img)
-                # cv2.imwrite(save_img_dir+'{}.jpg'.format(cnt),
-                #             ret['generic'])
-
-        # esc to quit and finish saving video
+                
         if cv2.waitKey(1) == 27:
             save_and_exit(opt, out, results, out_name)
             return

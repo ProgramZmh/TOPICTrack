@@ -1,13 +1,9 @@
-# vim: expandtab:ts=4:sw=4
+
 import numpy as np
 import scipy.linalg
 
 
-"""
-Table for the 0.95 quantile of the chi-square distribution with N degrees of
-freedom (contains values for N=1, ..., 9). Taken from MATLAB/Octave's chi2inv
-function and used as Mahalanobis gating threshold.
-"""
+
 chi2inv95 = {
     1: 3.8415,
     2: 5.9915,
@@ -66,26 +62,7 @@ class KalmanFilterv1(object):
         return mean, covariance
     
     def update(self, mean, covariance, measurement):
-        """Run Kalman filter correction step.
-
-        Parameters
-        ----------
-        mean : ndarray
-            The predicted state's mean vector (8 dimensional).
-        covariance : ndarray
-            The state's covariance matrix (8x8 dimensional).
-        measurement : ndarray
-            The 4 dimensional measurement vector (x, y, a, h), where (x, y)
-            is the center position, a the aspect ratio, and h the height of the
-            bounding box.
-
-        Returns
-        -------
-        (ndarray, ndarray)
-            Returns the measurement-corrected state distribution.
-
-        """
-        # 计算位移
+        
         new_mean = np.zeros_like(mean)
         new_mean[:4] = measurement
         new_mean[4:6] = mean[:2]-measurement[:2]
@@ -113,15 +90,11 @@ class KalmanFilterv0(object):
     def __init__(self):
         ndim, dt = 4, 1.
 
-        # Create Kalman filter model matrices.
         self._motion_mat = np.eye(2 * ndim, 2 * ndim)
         for i in range(ndim):
             self._motion_mat[i, ndim + i] = dt
         self._update_mat = np.eye(ndim, 2 * ndim)
 
-        # Motion and observation uncertainty are chosen relative to the current
-        # state estimate. These weights control the amount of uncertainty in
-        # the model. This is a bit hacky.
         self._std_weight_position = 1. / 20
         self._std_weight_velocity = 1. / 160
 

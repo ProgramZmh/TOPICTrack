@@ -151,7 +151,7 @@ def test(opt):
     dataset = Dataset(opt, split)
     detector = Detector(opt)
 
-    if opt.load_results != '':  # load results in json
+    if opt.load_results != '':  
         load_results = json.load(open(opt.load_results, 'r'))
 
     results = {}

@@ -4,7 +4,6 @@ import argparse
 def make_parser():
     parser = argparse.ArgumentParser("OC-SORT parameters")
 
-    # distributed
     parser.add_argument("-b", "--batch-size", type=int, default=1, help="batch size")
     parser.add_argument("-d", "--devices", default=None, type=int, help="device for training")
 
@@ -33,14 +32,13 @@ def make_parser():
         nargs=argparse.REMAINDER,
     )
 
-    # det args
+
     parser.add_argument("-c", "--ckpt", default=None, type=str, help="ckpt for eval")
     parser.add_argument("--conf", default=0.1, type=float, help="test conf")
     parser.add_argument("--nms", default=0.7, type=float, help="test nms threshold")
     parser.add_argument("--tsize", default=[800, 1440], nargs="+", type=int, help="test img size")
     parser.add_argument("--seed", default=None, type=int, help="eval seed")
 
-    # tracking args
     parser.add_argument("--track_thresh", type=float, default=0.6, help="detection confidence threshold")
     parser.add_argument(
         "--iou_thresh",
@@ -77,7 +75,7 @@ def make_parser():
     parser.add_argument("--public", action="store_true", help="use public detection")
     parser.add_argument("--asso", default="iou", help="similarity function: iou/giou/diou/ciou/ctdis")
 
-    # for kitti/bdd100k inference with public detections
+
     parser.add_argument(
         "--raw_results_path",
         type=str,
@@ -92,7 +90,7 @@ def make_parser():
             initializing the tracks (offline).",
     )
 
-    # for demo video
+
     parser.add_argument("--demo_type", default="image", help="demo type, eg. image, video and webcam")
     parser.add_argument("--path", default="./videos/demo.mp4", help="path to images or video")
     parser.add_argument("--camid", type=int, default=0, help="webcam demo camera id")

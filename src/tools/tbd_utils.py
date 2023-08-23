@@ -39,7 +39,7 @@ def IsInboundary(bbox_pos, boundary):
     cx = bbox_pos[0] + (bbox_pos[2] - bbox_pos[0])/2
     cy = bbox_pos[1] + (bbox_pos[3] - bbox_pos[1])/2
 
-    # 0: out; 1:entry
+
     inboundary = 1 if (x1 <= cx <= x2) and (y1 <= cy <= y2) else 0
 
     return inboundary
@@ -78,8 +78,7 @@ def SaveRecords(trackers, frame_id, results_path):
     records = []
     for ti in trackers:
         tlwh = xyxy2tlwh(ti[:4])
-        # records.append("%d,%d,%.2f,%.2f,%.2f,%.2f,1\n" % (
-        #     frame_id, ti[-1], tlwh[0], tlwh[1], tlwh[2], tlwh[3]))
+       
         records.append("%d,%d,%.2f,%.2f,%.2f,%.2f,1\n" % (
             frame_id, ti[-1], round(tlwh[0], 0), round(tlwh[1], 0), round(tlwh[2], 0), round(tlwh[3], 0)))
 

@@ -4,11 +4,10 @@ import json
 import cv2
 
 
-# Use the same script for MOT16
 DATA_PATH = '/remote-home/zhengyiyao/TraDeS/data/mot17'
 OUT_PATH = os.path.join(DATA_PATH, 'annotations')
-SPLITS = ['train']  # --> split training data to train_half and val_half.
-# SPLITS = ['train']
+SPLITS = ['train'] 
+
 HALF_VIDEO = True
 CREATE_SPLITTED_ANN = True
 CREATE_SPLITTED_DET = True
@@ -38,15 +37,14 @@ if __name__ == '__main__':
         for seq in sorted(seqs):
             if '.DS_Store' in seq:
                 continue
-            # if 'mot' in DATA_PATH and (split != 'test' and not ('FRCNN' in seq)):
-            #     continue
-            video_cnt += 1  # video sequence number.
+          
+            video_cnt += 1  
             out['videos'].append({'id': video_cnt, 'file_name': seq})
             seq_path = os.path.join(data_path, seq)
             img_path = os.path.join(seq_path, 'img1')
             ann_path = os.path.join(seq_path, 'gt/gt.txt')
             images = os.listdir(img_path)
-            num_images = len([image for image in images if 'jpg' in image])  # half and half
+            num_images = len([image for image in images if 'jpg' in image])  
 
             if HALF_VIDEO and ('half' in split):
                 image_range = [0, num_images // 2] if 'train' in split else \
@@ -61,11 +59,11 @@ if __name__ == '__main__':
                 print('{}/img1/{:08d}.jpg'.format(seq, i + 1))
                 img = cv2.imread(os.path.join(data_path, '{}/img1/{:08d}.jpg'.format(seq, i + 1)))
                 height, width = img.shape[:2]
-                image_info = {'file_name': '{}/img1/{:08d}.jpg'.format(seq, i + 1),  # image name.
-                              'id': image_cnt + i + 1,  # image number in the entire training set.
-                              # image number in the video sequence, starting from 1.
+                image_info = {'file_name': '{}/img1/{:08d}.jpg'.format(seq, i + 1), 
+                              'id': image_cnt + i + 1, 
+                            
                               'frame_id': i + 1 - image_range[0],
-                              # image number in the entire training set.
+                           
                               'prev_image_id': image_cnt + i if i > 0 else -1,
                               'next_image_id': image_cnt + i + 2 if i < num_images - 1 else -1,
                               'video_id': video_cnt,
@@ -75,7 +73,7 @@ if __name__ == '__main__':
             if split != 'test':
                 det_path = os.path.join(seq_path, 'det/det.txt')
                 anns = np.loadtxt(ann_path, dtype=np.float32, delimiter=',')
-                # dets = np.loadtxt(det_path, dtype=np.float32, delimiter=',')
+             
                 if CREATE_SPLITTED_ANN and ('half' in split):
                     anns_out = np.array([anns[i] for i in range(anns.shape[0])
                                          if int(anns[i][0]) - 1 >= image_range[0] and
@@ -88,18 +86,7 @@ if __name__ == '__main__':
                             int(o[0]), int(o[1]), int(o[2]), int(o[3]), int(o[4]), int(o[5]),
                             int(o[6]), int(o[7]), o[8]))
                     fout.close()
-                # if CREATE_SPLITTED_DET and ('half' in split):
-                #     dets_out = np.array([dets[i] for i in range(dets.shape[0])
-                #                          if int(dets[i][0]) - 1 >= image_range[0] and
-                #                          int(dets[i][0]) - 1 <= image_range[1]], np.float32)
-                #     dets_out[:, 0] -= image_range[0]
-                #     det_out = os.path.join(seq_path, 'det/det_{}.txt'.format(split))
-                #     dout = open(det_out, 'w')
-                #     for o in dets_out:
-                #         dout.write('{:d},{:d},{:.1f},{:.1f},{:.1f},{:.1f},{:.6f}\n'.format(
-                #                     int(o[0]), int(o[1]), float(o[2]), float(o[3]), float(o[4]), float(o[5]),
-                #                     float(o[6])))
-                #     dout.close()
+             
 
                 print('{} ann images'.format(int(anns[:, 0].max())))
                 for i in range(anns.shape[0]):
@@ -110,16 +97,15 @@ if __name__ == '__main__':
                     cat_id = int(anns[i][7])
                     ann_cnt += 1
                     if not ('15' in DATA_PATH):
-                        # if not (float(anns[i][8]) >= 0.25):  # visibility.
-                        # continue
-                        if not (int(anns[i][6]) == 1):  # whether ignore.
+                       
+                        if not (int(anns[i][6]) == 1): 
                             continue
-                        if int(anns[i][7]) in [3, 4, 5, 6, 9, 10, 11]:  # Non-person
+                        if int(anns[i][7]) in [3, 4, 5, 6, 9, 10, 11]: 
                             continue
-                        if int(anns[i][7]) in [2, 7, 8, 12]:  # Ignored person
+                        if int(anns[i][7]) in [2, 7, 8, 12]: 
                             category_id = -1
                         else:
-                            category_id = 1  # pedestrian(non-static)
+                            category_id = 1 
                             if not track_id == tid_last:
                                 tid_curr += 1
                                 tid_last = track_id

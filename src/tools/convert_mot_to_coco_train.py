@@ -2,13 +2,13 @@ import os
 import numpy as np
 import json
 import cv2
-# Use the same script for MOT16
-# DATA_PATH = '../../data/mot16/'
-DATA_PATH = '/home/caoxiaoyan/MOT_benchmark/trades/BEE20_tiny/'
+
+DATA_PATH = '../../data/mot16/'
+
 OUT_PATH = DATA_PATH + 'annotations/'
-# 'train_half', 'val_half', 'train', 'test'
+
 SPLITS = ['train']
-# SPLITS = ['train_half', 'val_half', 'train', 'test']
+
 HALF_VIDEO = True
 CREATE_SPLITTED_ANN = True
 CREATE_SPLITTED_DET = False
@@ -107,9 +107,9 @@ if __name__ == '__main__':
                             continue
                         if not (int(anns[i][6]) == 1):
                             continue
-                        if (int(anns[i][7]) in [3, 4, 5, 6, 9, 10, 11]):  # Non-person
+                        if (int(anns[i][7]) in [3, 4, 5, 6, 9, 10, 11]):  
                             continue
-                        if (int(anns[i][7]) in [2, 7, 8, 12]):  # Ignored person
+                        if (int(anns[i][7]) in [2, 7, 8, 12]):  
                             category_id = -1
                         else:
                             category_id = 1
@@ -130,7 +130,7 @@ if __name__ == '__main__':
                            'conf': float(anns[i][6]),
                            'global_track_id': global_track_id[identity],
                            'iscrowd': 0}
-                    #  ann['bbox'] x1 y2 w h
+               
                     ann['area'] = ann['bbox'][2] * ann['bbox'][3]
                     out['annotations'].append(ann)
             image_cnt += num_images

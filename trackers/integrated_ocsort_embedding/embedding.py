@@ -17,10 +17,8 @@ class EmbeddingComputer:
         self.model = None
         self.dataset = dataset
         self.test_dataset = test_dataset
-        self.crop_size = (128, 384) # TODO：尝试这里
-        # self.crop_size = (128, 128)
-        # self.crop_size = (224, 224)
-        # self.crop_size = (384, 384)
+        self.crop_size = (128, 384)
+      
         os.makedirs("./cache/embeddings/", exist_ok=True)
         self.cache_path = "./cache/embeddings/{}_embedding.pkl"
         self.cache = {}
@@ -28,7 +26,6 @@ class EmbeddingComputer:
         self.grid_off = grid_off
         self.max_batch = max_batch
 
-        # Only used for the general ReID model (not FastReID)
         self.normalize = False
 
     def load_cache(self, path):
@@ -51,7 +48,7 @@ class EmbeddingComputer:
         bbox = np.array(bbox)
         bbox = bbox.astype(int)
         if bbox[0] < 0 or bbox[1] < 0 or bbox[2] > w or bbox[3] > h:
-            # Faulty Patch Correction
+         
             bbox[0] = np.clip(bbox[0], 0, None)
             bbox[1] = np.clip(bbox[1], 0, None)
             bbox[2] = np.clip(bbox[2], 0, image.shape[1])
@@ -60,7 +57,7 @@ class EmbeddingComputer:
         x1, y1, x2, y2 = bbox
         w = x2 - x1
         h = y2 - y1
-        # TODO - Write a generalized split logic
+    
         split_boxes = [
             [x1, y1, x1 + w, y1 + h / 3],
             [x1, y1 + h / 3, x1 + w, y1 + (2 / 3) * h],
@@ -69,14 +66,14 @@ class EmbeddingComputer:
 
         split_boxes = np.array(split_boxes, dtype="int")
         patches = []
-        # breakpoint()
+      
         for ix, patch_coords in enumerate(split_boxes):
             if isinstance(image, np.ndarray):
                 print('image.shape22: ',image.shape)
                 im1 = image[patch_coords[1]: patch_coords[3],
                             patch_coords[0]: patch_coords[2], :]
                 print('im1.s: ', im1.shape)
-                if viz:  # TODO - change it from torch tensor to numpy array
+                if viz: 
                     dirs = "./viz/{}/{}".format(tag.split(":")
                                                 [0], tag.split(":")[1])
                     Path(dirs).mkdir(parents=True, exist_ok=True)
@@ -91,7 +88,7 @@ class EmbeddingComputer:
                 patch = torch.as_tensor(
                     patch.astype("float32").transpose(2, 0, 1))
                 patch = patch.unsqueeze(0)
-                # print("test ", patch.shape)
+               
                 patches.append(patch)
             else:
                 im1 = image[:, :, patch_coords[1]: patch_coords[3],
@@ -102,9 +99,7 @@ class EmbeddingComputer:
 
         patches = torch.cat(patches, dim=0)
 
-        # print("Patches shape ", patches.shape)
-        # patches = np.array(patches)
-        # print("ALL SPLIT PATCHES SHAPE - ", patches.shape)
+        
 
         return patches
 
@@ -127,12 +122,10 @@ class EmbeddingComputer:
         if self.model is None:
             self.initialize_model()
 
-        # Generate all of the patches
         crops = []
       
         if self.grid_off:
            
-            # Basic embeddings
             h, w = img.shape[:2]
             results = np.round(bbox).astype(np.int32)
             results[:, 0] = results[:, 0].clip(0, w)
@@ -157,13 +150,11 @@ class EmbeddingComputer:
                 crops.append(crop)
         else:
          
-            # Grid patch embeddings
             for idx, box in enumerate(bbox):
                 crop = self.get_horizontal_split_patches(img, box, tag, idx)
                 crops.append(crop)
         crops = torch.cat(crops, dim=0)
 
-        # Create embeddings and l2 normalize them
         embs = []
 
         for idx in range(0, len(crops), self.max_batch):
@@ -193,28 +184,24 @@ class EmbeddingComputer:
                 path = "external/weights/mot17_sbs_S50.pth"
 
             else:
-                # path = "external/weights/market_sbs_R101-ibn.pth"
+                
                 path = "external/weights/mot17_sbs_S50.pth"
-                # path = "external/weights/market_sbs_R50-ibn.pth"
-                # return self._get_general_model()
+                
         elif self.dataset == "mot20":
             if self.test_dataset:
                 path = "external/weights/mot20_sbs_S50.pth"
             else:
                 path = "external/weights/mot20_sbs_S50.pth"
-                # path = "external/weights/market_sbs_R101-ibn.pth"
-                # return self._get_general_model()
+                
         elif self.dataset == "dance":
             path = "external/weights/dance_sbs_S50.pth"
-            # path = "external/weights/market_sbs_R101-ibn.pth"
+           
         elif self.dataset == "bee":
-            # path = "external/weights/bee_bagtricks.pth"
+       
             path = "external/weights/bee_AGM.pth"
-            # path = "external/weights/bee_AGM128.pth"
-            # path = "external/weights/bee_AGM224.pth"
-            # path = "external/weights/bee_AGM384.pth"
+          
         elif self.dataset == "gmot":
-            # path = "external/weights/gmot_sbs_S50.pth"
+            
             path = "external/weights/gmot_AGM.pth"
 
         else:
@@ -241,17 +228,15 @@ class EmbeddingComputer:
 
         new_state_dict = OrderedDict()
         for k, v in sd.items():
-            name = k[7:]  # remove `module.`
+            name = k[7:]  
             new_state_dict[name] = v
-        # load params
+    
         model.load_state_dict(new_state_dict)
         model.eval()
         model.cuda()
         self.model = model
         self.crop_size = (128, 256)
-        # self.crop_size = (128, 128)
-        # self.crop_size = (224, 224)
-        # self.crop_size = (384, 384)
+   
         self.normalize = True
 
     def dump_cache(self):

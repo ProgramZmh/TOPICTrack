@@ -16,7 +16,6 @@ class STrack(BaseTrack):
 
     def __init__(self, tlwh, score):
 
-        # wait activate
         self._tlwh = np.asarray(tlwh, dtype=np.float)
         self.kalman_filter = None
         self.mean, self.covariance = None, None
@@ -45,7 +44,7 @@ class STrack(BaseTrack):
                 stracks[i].covariance = cov
 
     def activate(self, kalman_filter, frame_id):
-        """Start a new tracklet"""
+       
         self.kalman_filter = kalman_filter
         self.track_id = self.next_id()
         self.mean, self.covariance = self.kalman_filter.initiate(self.tlwh_to_xyah(self._tlwh))
@@ -54,7 +53,7 @@ class STrack(BaseTrack):
         self.state = TrackState.Tracked
         if frame_id == 1:
             self.is_activated = True
-        # self.is_activated = True
+    
         self.frame_id = frame_id
         self.start_frame = frame_id
 
@@ -89,11 +88,9 @@ class STrack(BaseTrack):
         self.score = new_track.score
 
     @property
-    # @jit(nopython=True)
+  
     def tlwh(self):
-        """Get current position in bounding box format `(top left x, top left y,
-        width, height)`.
-        """
+        
         if self.mean is None:
             return self._tlwh.copy()
         ret = self.mean[:4].copy()
@@ -102,21 +99,17 @@ class STrack(BaseTrack):
         return ret
 
     @property
-    # @jit(nopython=True)
+   
     def tlbr(self):
-        """Convert bounding box to format `(min x, min y, max x, max y)`, i.e.,
-        `(top left, bottom right)`.
-        """
+        
         ret = self.tlwh.copy()
         ret[2:] += ret[:2]
         return ret
 
     @staticmethod
-    # @jit(nopython=True)
+   
     def tlwh_to_xyah(tlwh):
-        """Convert bounding box to format `(center x, center y, aspect ratio,
-        height)`, where the aspect ratio is `width / height`.
-        """
+        
         ret = np.asarray(tlwh).copy()
         ret[:2] += ret[2:] / 2
         ret[2] /= ret[3]
@@ -126,14 +119,14 @@ class STrack(BaseTrack):
         return self.tlwh_to_xyah(self.tlwh)
 
     @staticmethod
-    # @jit(nopython=True)
+  
     def tlbr_to_tlwh(tlbr):
         ret = np.asarray(tlbr).copy()
         ret[2:] -= ret[:2]
         return ret
 
     @staticmethod
-    # @jit(nopython=True)
+   
     def tlwh_to_tlbr(tlwh):
         ret = np.asarray(tlwh).copy()
         ret[2:] += ret[:2]
@@ -145,13 +138,13 @@ class STrack(BaseTrack):
 
 class BYTETracker(object):
     def __init__(self, args, frame_rate=30, **kwargs):
-        self.tracked_stracks = []  # type: list[STrack]
-        self.lost_stracks = []  # type: list[STrack]
-        self.removed_stracks = []  # type: list[STrack]
+        self.tracked_stracks = []  
+        self.lost_stracks = [] 
+        self.removed_stracks = [] 
 
         self.frame_id = 0
         self.args = args
-        # self.det_thresh = args.track_thresh
+   
         self.det_thresh = args.track_thresh + 0.1
         self.buffer_size = int(frame_rate / 30.0 * args.track_buffer)
         self.max_time_lost = self.buffer_size
@@ -170,8 +163,8 @@ class BYTETracker(object):
         else:
             output_results = output_results.cpu().numpy()
             scores = output_results[:, 4] * output_results[:, 5]
-            bboxes = output_results[:, :4]  # x1y1x2y2
-        # Rescale
+            bboxes = output_results[:, :4] 
+        
         scale = min(img_tensor.shape[2] / img_numpy.shape[1], img_tensor.shape[3] / img_numpy.shape[2])
         bboxes /= scale
 
@@ -191,18 +184,16 @@ class BYTETracker(object):
         else:
             detections = []
 
-        """ Add newly detected tracklets to tracked_stracks"""
         unconfirmed = []
-        tracked_stracks = []  # type: list[STrack]
+        tracked_stracks = [] 
         for track in self.tracked_stracks:
             if not track.is_activated:
                 unconfirmed.append(track)
             else:
                 tracked_stracks.append(track)
 
-        """ Step 2: First association, with high score detection boxes"""
         strack_pool = joint_stracks(tracked_stracks, self.lost_stracks)
-        # Predict the current location with KF
+     
         STrack.multi_predict(strack_pool)
         dists = matching.iou_distance(strack_pool, detections)
         matches, u_track, u_detection = matching.linear_assignment(dists, thresh=self.args.match_thresh)
@@ -217,10 +208,9 @@ class BYTETracker(object):
                 track.re_activate(det, self.frame_id, new_id=False)
                 refind_stracks.append(track)
 
-        """ Step 3: Second association, with low score detection boxes"""
-        # association the untrack to the low score detections
+   
         if len(dets_second) > 0:
-            """Detections"""
+         
             detections_second = [STrack(STrack.tlbr_to_tlwh(tlbr), s) for (tlbr, s) in zip(dets_second, scores_second)]
         else:
             detections_second = []
@@ -268,7 +258,6 @@ class BYTETracker(object):
                 track.mark_removed()
                 removed_stracks.append(track)
 
-        # print('Ramained match {} s'.format(t4-t3))
 
         self.tracked_stracks = [t for t in self.tracked_stracks if t.state == TrackState.Tracked]
         self.tracked_stracks = joint_stracks(self.tracked_stracks, activated_starcks)
@@ -278,7 +267,7 @@ class BYTETracker(object):
         self.lost_stracks = sub_stracks(self.lost_stracks, self.removed_stracks)
         self.removed_stracks.extend(removed_stracks)
         self.tracked_stracks, self.lost_stracks = remove_duplicate_stracks(self.tracked_stracks, self.lost_stracks)
-        # get scores of lost tracks
+       
         output_stracks = [track for track in self.tracked_stracks if track.is_activated]
 
         ret = [(*t.tlbr, t.track_id) for t in output_stracks]

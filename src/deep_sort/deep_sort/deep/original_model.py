@@ -48,7 +48,7 @@ def make_layers(c_in,c_out,repeat_times, is_downsample=False):
 class Net(nn.Module):
     def __init__(self, num_classes=625 ,reid=False):
         super(Net,self).__init__()
-        # 3 128 64
+      
         self.conv = nn.Sequential(
             nn.Conv2d(3,32,3,stride=1,padding=1),
             nn.BatchNorm2d(32),
@@ -58,20 +58,20 @@ class Net(nn.Module):
             nn.ELU(inplace=True),
             nn.MaxPool2d(3,2,padding=1),
         )
-        # 32 64 32
+      
         self.layer1 = make_layers(32,32,2,False)
-        # 32 64 32
+        
         self.layer2 = make_layers(32,64,2,True)
-        # 64 32 16
+        
         self.layer3 = make_layers(64,128,2,True)
-        # 128 16 8
+       
         self.dense = nn.Sequential(
             nn.Dropout(p=0.6),
             nn.Linear(128*16*8, 128),
             nn.BatchNorm1d(128),
             nn.ELU(inplace=True)
         )
-        # 256 1 1 
+      
         self.reid = reid
         self.batch_norm = nn.BatchNorm1d(128)
         self.classifier = nn.Sequential(
@@ -91,8 +91,7 @@ class Net(nn.Module):
             x = x.div(x.norm(p=2,dim=1,keepdim=True))
             return x
         x = self.dense(x)
-        # B x 128
-        # classifier
+       
         x = self.classifier(x)
         return x
 

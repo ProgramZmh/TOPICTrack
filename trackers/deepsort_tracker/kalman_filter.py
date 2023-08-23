@@ -1,4 +1,4 @@
-# vim: expandtab:ts=4:sw=4
+
 import numpy as np
 import scipy.linalg
 
@@ -36,15 +36,11 @@ class KalmanFilter(object):
     def __init__(self):
         ndim, dt = 4, 1.0
 
-        # Create Kalman filter model matrices.
         self._motion_mat = np.eye(2 * ndim, 2 * ndim)
         for i in range(ndim):
             self._motion_mat[i, ndim + i] = dt
         self._update_mat = np.eye(ndim, 2 * ndim)
 
-        # Motion and observation uncertainty are chosen relative to the current
-        # state estimate. These weights control the amount of uncertainty in
-        # the model. This is a bit hacky.
         self._std_weight_position = 1.0 / 20
         self._std_weight_velocity = 1.0 / 160
 

@@ -11,11 +11,7 @@ from src.lib.logger import Logger
 from src.lib.utils.utils import AverageMeter
 from src.lib.dataset.dataset_factory import dataset_factory
 from src.lib.detector import Detector
-# from opts import opts
-# from logger import Logger
-# from utils.utils import AverageMeter
-# from dataset.dataset_factory import dataset_factory
-# from detector import Detector
+
 
 
 class PrefetchDataset(torch.utils.data.Dataset):
@@ -152,7 +148,7 @@ def test(opt):
     dataset = Dataset(opt, split)
     detector = Detector(opt)
 
-    if opt.load_results != '':  # load results in json
+    if opt.load_results != '':  
         load_results = json.load(open(opt.load_results, 'r'))
 
     results = {}

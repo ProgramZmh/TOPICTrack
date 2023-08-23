@@ -1,8 +1,4 @@
-# Copyright (c) Xingyi Zhou. All Rights Reserved
-'''
-nuScenes pre-processing script.
-This file convert the nuScenes annotation into COCO format.
-'''
+
 import json
 import numpy as np
 import cv2
@@ -78,7 +74,6 @@ def main():
     num_anns = 0
     num_videos = 0
 
-    # A "sample" in nuScenes refers to a timestamp with 6 cameras and 1 LIDAR.
     for sample in nusc.sample:
       scene_name = nusc.get('scene', sample['scene_token'])['name']
       if not (split in ['mini', 'test']) and \
@@ -90,14 +85,13 @@ def main():
         ret['videos'].append({'id': num_videos, 'file_name': scene_name})
         frame_ids = {k: 0 for k in sample['data']}
         track_ids = {}
-      # We decompose a sample into 6 images in our case.
+
       for sensor_name in sample['data']:
         if sensor_name in USED_SENSOR:
           image_token = sample['data'][sensor_name]
           image_data = nusc.get('sample_data', image_token)
           num_images += 1
 
-          # Complex coordinate transform. This will take time to understand.
           sd_record = nusc.get('sample_data', image_token)
           cs_record = nusc.get(
             'calibrated_sensor', sd_record['calibrated_sensor_token'])
@@ -115,7 +109,6 @@ def main():
           calib = calib[:3]
           frame_ids[sensor_name] += 1
 
-          # image information in COCO format
           image_info = {'id': num_images,
                         'file_name': image_data['filename'],
                         'calib': calib.tolist(), 
@@ -158,11 +151,10 @@ def main():
               print(attributes)
               import pdb; pdb.set_trace()
             track_id = track_ids[instance_token]
-            vel = nusc.box_velocity(box.token) # global frame
+            vel = nusc.box_velocity(box.token) 
             vel = np.dot(np.linalg.inv(trans_matrix), 
               np.array([vel[0], vel[1], vel[2], 0], np.float32)).tolist()
             
-            # instance information in COCO format
             ann = {
               'id': num_anns,
               'image_id': num_images,
@@ -189,7 +181,6 @@ def main():
             ann['alpha'] = alpha
             anns.append(ann)
 
-          # Filter out bounding boxes outside the image
           visable_anns = []
           for i in range(len(anns)):
             vis = True
@@ -251,8 +242,6 @@ def main():
     print('out_path', out_path)
     json.dump(ret, open(out_path, 'w'))
 
-# Official train/ val split from 
-# https://github.com/nutonomy/nuscenes-devkit/blob/master/python-sdk/nuscenes/utils/splits.py
 SCENE_SPLITS = {
 'train':
     ['scene-0001', 'scene-0002', 'scene-0004', 'scene-0005', 'scene-0006', 'scene-0007', 'scene-0008', 'scene-0009',

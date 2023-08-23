@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import numpy as np
 
-# from sklearn.utils.linear_assignment_ import linear_assignment
+
 from scipy.optimize import linear_sum_assignment as linear_assignment
 from trackers.deepsort_tracker import kalman_filter
 
@@ -53,7 +53,7 @@ def min_cost_matching(
         detection_indices = np.arange(len(detections))
 
     if len(detection_indices) == 0 or len(track_indices) == 0:
-        return [], track_indices, detection_indices  # Nothing to match.
+        return [], track_indices, detection_indices  
 
     cost_matrix = distance_metric(tracks, detections, track_indices, detection_indices)
     cost_matrix[cost_matrix > max_distance] = max_distance + 1e-5
@@ -128,11 +128,11 @@ def matching_cascade(
     unmatched_detections = detection_indices
     matches = []
     for level in range(cascade_depth):
-        if len(unmatched_detections) == 0:  # No detections left
+        if len(unmatched_detections) == 0: 
             break
 
         track_indices_l = [k for k in track_indices if tracks[k].time_since_update == 1 + level]
-        if len(track_indices_l) == 0:  # Nothing to match at this level
+        if len(track_indices_l) == 0:
             continue
 
         matches_l, _, unmatched_detections = min_cost_matching(

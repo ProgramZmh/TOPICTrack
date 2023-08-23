@@ -1,17 +1,4 @@
-exp=dance_val_new
-# 指定要删除的文件夹列表
-folder_list=(
-  "cache/embeddings/dancetrack*"
-  "cache/det_bytetrack_dance_model.pkl"
-  "results/trackers/DANCE-val/${exp}_post"
-  "results/trackers/DANCE-val/${exp}"
-)
-
-# 遍历文件夹列表
-for folder_path in "${folder_list[@]}"; do
-  rm -rf $folder_path
-done
-
+exp=dance_val
 
 python3 main.py --exp_name $exp --post --alpha_gate 0.9 --gate 0.2  --cmc_off --da_off --aw_off --grid_off --new_kf_off --aspect_ratio_thresh 1000 --w_assoc_emb 1.25 --aw_param 1
 
