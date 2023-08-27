@@ -1,4 +1,6 @@
-
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
 
 import math
 from functools import partial
@@ -6,7 +8,18 @@ from functools import partial
 
 class LRScheduler:
     def __init__(self, name, lr, iters_per_epoch, total_epochs, **kwargs):
-       
+        """
+        Supported lr schedulers: [cos, warmcos, multistep]
+
+        Args:
+            lr (float): learning rate.
+            iters_per_peoch (int): number of iterations in one epoch.
+            total_epochs (int): number of epochs in training.
+            kwargs (dict):
+                - cos: None
+                - warmcos: [warmup_epochs, warmup_lr_start (default 1e-6)]
+                - multistep: [milestones (epochs), gamma (default 0.1)]
+        """
 
         self.lr = lr
         self.iters_per_epoch = iters_per_epoch
@@ -21,7 +34,7 @@ class LRScheduler:
         return self.lr_func(iters)
 
     def _get_lr_func(self, name):
-        if name == "cos":  
+        if name == "cos":  # cosine lr schedule
             lr_func = partial(cos_lr, self.lr, self.total_iters)
         elif name == "warmcos":
             warmup_total_iters = self.iters_per_epoch * self.warmup_epochs
@@ -69,7 +82,7 @@ class LRScheduler:
                 self.iters_per_epoch,
                 self.iters_per_epoch_semi,
             )
-        elif name == "multistep": 
+        elif name == "multistep":  # stepwise lr schedule
             milestones = [
                 int(self.total_iters * milestone / self.total_epochs)
                 for milestone in self.milestones
@@ -114,10 +127,10 @@ def yolox_warm_cos_lr(
     no_aug_iter,
     iters,
 ):
-    
+    """Cosine learning rate with warm up."""
     min_lr = lr * min_lr_ratio
     if iters <= warmup_total_iters:
-        
+        # lr = (lr - warmup_lr_start) * iters / float(warmup_total_iters) + warmup_lr_start
         lr = (lr - warmup_lr_start) * pow(
             iters / float(warmup_total_iters), 2
         ) + warmup_lr_start
@@ -148,10 +161,10 @@ def yolox_semi_warm_cos_lr(
     iters_per_epoch_semi,
     iters,
 ):
-   
+    """Cosine learning rate with warm up."""
     min_lr = lr * min_lr_ratio
     if iters <= warmup_total_iters:
-      
+        # lr = (lr - warmup_lr_start) * iters / float(warmup_total_iters) + warmup_lr_start
         lr = (lr - warmup_lr_start) * pow(
             iters / float(warmup_total_iters), 2
         ) + warmup_lr_start

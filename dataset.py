@@ -33,8 +33,8 @@ def get_mot_loader(dataset, test, data_dir="data", workers=4, size=(800, 1440)):
         else:
             annotation = "val.json"
             name = "val"
-    elif dataset == "bee":
-        direc = "bee"
+    elif dataset == "BEE23":
+        direc = "BEE23"
         if test:
             name = "test"
             annotation = "test.json"

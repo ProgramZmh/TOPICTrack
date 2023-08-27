@@ -249,7 +249,6 @@ class MotChallenge2DBox(_BaseDataset):
                     self.tracker_fol, tracker, self.tracker_sub_fol, seq + ".txt"
                 )
 
-        print("file111: ",file)
         read_data, ignore_data = self._load_simple_text_file(
             file, is_zipped=self.data_is_zipped, zip_file=zip_file
         )

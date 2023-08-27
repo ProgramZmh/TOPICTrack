@@ -1,15 +1,17 @@
-
-
-import ast
-import pprint
-from abc import ABCMeta, abstractmethod
-from typing import Dict
-from tabulate import tabulate
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
 
 import torch
 from torch.nn import Module
 
 from yolox.utils import LRScheduler
+
+import ast
+import pprint
+from abc import ABCMeta, abstractmethod
+from tabulate import tabulate
+from typing import Dict
 
 
 class BaseExp(metaclass=ABCMeta):
@@ -61,7 +63,7 @@ class BaseExp(metaclass=ABCMeta):
     def merge(self, cfg_list):
         assert len(cfg_list) % 2 == 0
         for k, v in zip(cfg_list[0::2], cfg_list[1::2]):
-           
+            # only update value with same key
             if hasattr(self, k):
                 src_value = getattr(self, k)
                 src_type = type(src_value)

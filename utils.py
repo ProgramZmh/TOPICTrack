@@ -35,7 +35,7 @@ def filter_targets(online_targets, aspect_ratio_thresh, min_box_area,dataset_):
         tlwh = [t[0], t[1], t[2] - t[0], t[3] - t[1]]
         tid = t[4]
         vertical = tlwh[2] / tlwh[3] > aspect_ratio_thresh
-        if dataset_ in ['bee', 'gmot']:
+        if dataset_ in ['BEE23', 'gmot']:
             online_tlwhs.append(tlwh)
             online_ids.append(tid)
         else:

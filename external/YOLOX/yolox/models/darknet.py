@@ -1,4 +1,6 @@
-
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+# Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
 
 from torch import nn
 
@@ -6,7 +8,7 @@ from .network_blocks import BaseConv, CSPLayer, DWConv, Focus, ResLayer, SPPBott
 
 
 class Darknet(nn.Module):
-  
+    # number of blocks from dark2 to dark5.
     depth2blocks = {21: [1, 2, 2, 1], 53: [2, 8, 8, 4]}
 
     def __init__(
@@ -20,7 +22,7 @@ class Darknet(nn.Module):
         Args:
             depth (int): depth of darknet used in model, usually use [21, 53] for this param.
             in_channels (int): number of input channels, for example, use 3 for RGB image.
-            stem_out_channels (int): number of output channels of darknet stem.
+            stem_out_channels (int): number of output chanels of darknet stem.
                 It decides channels of darknet layer2 to layer5.
             out_features (Tuple[str]): desired output layer name.
         """
@@ -31,22 +33,23 @@ class Darknet(nn.Module):
             BaseConv(in_channels, stem_out_channels, ksize=3, stride=1, act="lrelu"),
             *self.make_group_layer(stem_out_channels, num_blocks=1, stride=2),
         )
-        in_channels = stem_out_channels * 2  
+        in_channels = stem_out_channels * 2  # 64
 
         num_blocks = Darknet.depth2blocks[depth]
-        
+        # create darknet with `stem_out_channels` and `num_blocks` layers.
+        # to make model structure more clear, we don't use `for` statement in python.
         self.dark2 = nn.Sequential(
             *self.make_group_layer(in_channels, num_blocks[0], stride=2)
         )
-        in_channels *= 2  
+        in_channels *= 2  # 128
         self.dark3 = nn.Sequential(
             *self.make_group_layer(in_channels, num_blocks[1], stride=2)
         )
-        in_channels *= 2 
+        in_channels *= 2  # 256
         self.dark4 = nn.Sequential(
             *self.make_group_layer(in_channels, num_blocks[2], stride=2)
         )
-        in_channels *= 2  
+        in_channels *= 2  # 512
 
         self.dark5 = nn.Sequential(
             *self.make_group_layer(in_channels, num_blocks[3], stride=2),
@@ -105,13 +108,13 @@ class CSPDarknet(nn.Module):
         self.out_features = out_features
         Conv = DWConv if depthwise else BaseConv
 
-        base_channels = int(wid_mul * 64)  
-        base_depth = max(round(dep_mul * 3), 1)  
+        base_channels = int(wid_mul * 64)  # 64
+        base_depth = max(round(dep_mul * 3), 1)  # 3
 
-       
+        # stem
         self.stem = Focus(3, base_channels, ksize=3, act=act)
 
-        
+        # dark2
         self.dark2 = nn.Sequential(
             Conv(base_channels, base_channels * 2, 3, 2, act=act),
             CSPLayer(
@@ -123,7 +126,7 @@ class CSPDarknet(nn.Module):
             ),
         )
 
-       
+        # dark3
         self.dark3 = nn.Sequential(
             Conv(base_channels * 2, base_channels * 4, 3, 2, act=act),
             CSPLayer(
@@ -135,6 +138,7 @@ class CSPDarknet(nn.Module):
             ),
         )
 
+        # dark4
         self.dark4 = nn.Sequential(
             Conv(base_channels * 4, base_channels * 8, 3, 2, act=act),
             CSPLayer(
@@ -146,6 +150,7 @@ class CSPDarknet(nn.Module):
             ),
         )
 
+        # dark5
         self.dark5 = nn.Sequential(
             Conv(base_channels * 8, base_channels * 16, 3, 2, act=act),
             SPPBottleneck(base_channels * 16, base_channels * 16, activation=act),

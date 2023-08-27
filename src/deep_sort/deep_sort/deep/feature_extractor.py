@@ -24,14 +24,7 @@ class Extractor(object):
 
 
     def _preprocess(self, im_crops):
-        """
-        TODO:
-            1. to float with scale from 0 to 1
-            2. resize to (64, 128) as Market1501 dataset did
-            3. concatenate to a numpy array
-            3. to torch Tensor
-            4. normalize
-        """
+       
         def _resize(im, size):
             return cv2.resize(im.astype(np.float32)/255., size)
 

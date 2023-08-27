@@ -128,7 +128,7 @@ def main():
         print("Computing the weights ...")
         bce_weights = torch.zeros(num_attrs, dtype=torch.float)
         for _, attrs, _ in trainloader:
-            bce_weights += attrs.sum(0)  # sum along the batch dim
+            bce_weights += attrs.sum(0)  
         bce_weights /= len(trainloader) * args.batch_size
         print("Sample ratio for each attribute: {}".format(bce_weights))
         bce_weights = torch.exp(-1 * bce_weights)

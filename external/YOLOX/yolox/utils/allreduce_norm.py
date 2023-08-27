@@ -1,11 +1,13 @@
-
-
-import pickle
-from collections import OrderedDict
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
 
 import torch
 from torch import distributed as dist
 from torch import nn
+
+import pickle
+from collections import OrderedDict
 
 from .dist import _get_global_gloo_group, get_world_size
 
@@ -55,7 +57,14 @@ def _get_reduce_op(op_name):
 
 
 def all_reduce(py_dict, op="sum", group=None):
-   
+    """
+    Apply all reduce function for python dict object.
+    NOTE: make sure that every py_dict has the same keys and values are in the same shape.
+
+    Args:
+        py_dict (dict): dict to apply all reduce op.
+        op (str): operator, could be "sum" or "mean".
+    """
     world_size = get_world_size()
     if world_size == 1:
         return py_dict
@@ -64,6 +73,7 @@ def all_reduce(py_dict, op="sum", group=None):
     if dist.get_world_size(group) == 1:
         return py_dict
 
+    # all reduce logic across different devices.
     py_key = list(py_dict.keys())
     py_key_tensor = pyobj2tensor(py_key)
     dist.broadcast(py_key_tensor, src=0)

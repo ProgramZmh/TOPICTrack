@@ -21,9 +21,8 @@ def generate_trajectories(file_path, groundTrues):
     values = np.array(values, np.float_)
 
     if groundTrues:
-        # values = values[values[:, 6] == 1, :]  # Remove ignore objects
-        # values = values[values[:, 7] == 1, :]  # Pedestrian only
-        values = values[values[:, 8] > 0.4, :]  # visibility only
+        
+        values = values[values[:, 8] > 0.4, :]  
 
     values = np.array(values)
     values[:, 4] += values[:, 2]
@@ -43,7 +42,7 @@ def make_parser():
 
 
 def main(args):
-    # Create folder for outputs
+   
     save_path = os.path.join(args.save_path, str(args.dataset) + '-ReID')
     os.makedirs(save_path, exist_ok=True)
 
@@ -53,7 +52,7 @@ def main(args):
     test_save_path = os.path.join(save_path, 'bounding_box_test')
     os.makedirs(test_save_path, exist_ok=True)
 
-    # Get gt data
+    
     data_path = os.path.join(args.data_path, str(args.dataset), 'train')
 
     if args.dataset == 'MOT17':
@@ -70,7 +69,7 @@ def main(args):
         print(id_offset)
 
         ground_truth_path = os.path.join(data_path, seq, 'gt/gt.txt')
-        gt = generate_trajectories(ground_truth_path, groundTrues=True)  # f, id, x_tl, y_tl, x_br, y_br, ...
+        gt = generate_trajectories(ground_truth_path, groundTrues=True) 
 
         images_path = os.path.join(data_path, seq, 'img1')
         img_files = os.listdir(images_path)
@@ -102,14 +101,11 @@ def main(args):
                 x2 = min(x2, W)
                 y2 = min(y2, H)
 
-                # patch = cv2.cvtColor(img[y1:y2, x1:x2, :], cv2.COLOR_BGR2RGB)
                 patch = img[y1:y2, x1:x2, :]
 
                 max_id_per_seq = max(max_id_per_seq, id_)
 
-                # plt.figure()
-                # plt.imshow(patch)
-                # plt.show()
+             
 
                 fileName = (str(id_ + id_offset)).zfill(7) + '_' + seq + '_' + (str(f)).zfill(7) + '_acc_data.bmp'
 

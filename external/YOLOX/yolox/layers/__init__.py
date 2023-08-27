@@ -1,9 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
 
-import torch  
-
-from .jit_ops import FastCOCOEvalOp, JitOp
-
-try:
-    from .fast_coco_eval_api import COCOeval_opt
-except ImportError: 
-    pass
+from .fast_coco_eval_api import COCOeval_opt

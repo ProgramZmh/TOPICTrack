@@ -1,4 +1,6 @@
-
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+# Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
 
 import torch
 import torch.nn as nn
@@ -8,7 +10,9 @@ from .network_blocks import BaseConv
 
 
 class YOLOFPN(nn.Module):
-   
+    """
+    YOLOFPN module. Darknet 53 is the default backbone of this model.
+    """
 
     def __init__(
         self,
@@ -20,12 +24,15 @@ class YOLOFPN(nn.Module):
         self.backbone = Darknet(depth)
         self.in_features = in_features
 
+        # out 1
         self.out1_cbl = self._make_cbl(512, 256, 1)
         self.out1 = self._make_embedding([256, 512], 512 + 256)
 
+        # out 2
         self.out2_cbl = self._make_cbl(256, 128, 1)
         self.out2 = self._make_embedding([128, 256], 256 + 128)
 
+        # upsample
         self.upsample = nn.Upsample(scale_factor=2, mode="nearest")
 
     def _make_cbl(self, _in, _out, ks):
@@ -50,15 +57,24 @@ class YOLOFPN(nn.Module):
         self.backbone.load_state_dict(state_dict)
 
     def forward(self, inputs):
-        
+        """
+        Args:
+            inputs (Tensor): input image.
+
+        Returns:
+            Tuple[Tensor]: FPN output features..
+        """
+        #  backbone
         out_features = self.backbone(inputs)
         x2, x1, x0 = [out_features[f] for f in self.in_features]
 
+        #  yolo branch 1
         x1_in = self.out1_cbl(x0)
         x1_in = self.upsample(x1_in)
         x1_in = torch.cat([x1_in, x1], 1)
         out_dark4 = self.out1(x1_in)
 
+        #  yolo branch 2
         x2_in = self.out2_cbl(out_dark4)
         x2_in = self.upsample(x2_in)
         x2_in = torch.cat([x2_in, x2], 1)

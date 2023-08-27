@@ -1,0 +1,254 @@
+2023-08-27 06:58:28.421 | INFO     | yolox.core.trainer:before_train:124 - args: Namespace(batch_size=4, ckpt='external/weights/yolox_x.pth', devices=1, dist_backend='nccl', dist_url=None, exp_file='exps/example/mot/yolox_x_ablation.py', experiment_name='yolox_x_ablation', fp16=True, local_rank=0, machine_rank=0, name=None, num_machines=1, occupy=True, opts=[], resume=False, start_epoch=None)
+2023-08-27 06:58:28.424 | INFO     | yolox.core.trainer:before_train:125 - exp value:
+╒══════════════════╤════════════════════╕
+│ keys             │ values             │
+╞══════════════════╪════════════════════╡
+│ seed             │ None               │
+├──────────────────┼────────────────────┤
+│ output_dir       │ './YOLOX_outputs'  │
+├──────────────────┼────────────────────┤
+│ print_interval   │ 20                 │
+├──────────────────┼────────────────────┤
+│ eval_interval    │ 5                  │
+├──────────────────┼────────────────────┤
+│ num_classes      │ 1                  │
+├──────────────────┼────────────────────┤
+│ depth            │ 1.33               │
+├──────────────────┼────────────────────┤
+│ width            │ 1.25               │
+├──────────────────┼────────────────────┤
+│ data_num_workers │ 4                  │
+├──────────────────┼────────────────────┤
+│ input_size       │ (800, 1440)        │
+├──────────────────┼────────────────────┤
+│ random_size      │ (18, 32)           │
+├──────────────────┼────────────────────┤
+│ train_ann        │ 'train.json'       │
+├──────────────────┼────────────────────┤
+│ val_ann          │ 'test.json'        │
+├──────────────────┼────────────────────┤
+│ degrees          │ 10.0               │
+├──────────────────┼────────────────────┤
+│ translate        │ 0.1                │
+├──────────────────┼────────────────────┤
+│ scale            │ (0.1, 2)           │
+├──────────────────┼────────────────────┤
+│ mscale           │ (0.8, 1.6)         │
+├──────────────────┼────────────────────┤
+│ shear            │ 2.0                │
+├──────────────────┼────────────────────┤
+│ perspective      │ 0.0                │
+├──────────────────┼────────────────────┤
+│ enable_mixup     │ True               │
+├──────────────────┼────────────────────┤
+│ warmup_epochs    │ 1                  │
+├──────────────────┼────────────────────┤
+│ max_epoch        │ 80                 │
+├──────────────────┼────────────────────┤
+│ warmup_lr        │ 0                  │
+├──────────────────┼────────────────────┤
+│ basic_lr_per_img │ 1.5625e-05         │
+├──────────────────┼────────────────────┤
+│ scheduler        │ 'yoloxwarmcos'     │
+├──────────────────┼────────────────────┤
+│ no_aug_epochs    │ 10                 │
+├──────────────────┼────────────────────┤
+│ min_lr_ratio     │ 0.05               │
+├──────────────────┼────────────────────┤
+│ ema              │ True               │
+├──────────────────┼────────────────────┤
+│ weight_decay     │ 0.0005             │
+├──────────────────┼────────────────────┤
+│ momentum         │ 0.9                │
+├──────────────────┼────────────────────┤
+│ exp_name         │ 'yolox_x_ablation' │
+├──────────────────┼────────────────────┤
+│ test_size        │ (800, 1440)        │
+├──────────────────┼────────────────────┤
+│ test_conf        │ 0.1                │
+├──────────────────┼────────────────────┤
+│ nmsthre          │ 0.7                │
+╘══════════════════╧════════════════════╛
+2023-08-27 06:58:29.577 | INFO     | yolox.core.trainer:before_train:130 - Model Summary: Params: 99.00M, Gflops: 793.21
+2023-08-27 06:58:33.109 | INFO     | yolox.core.trainer:resume_train:289 - loading checkpoint for fine tuning
+2023-08-27 06:58:33.606 | WARNING  | yolox.utils.checkpoint:load_ckpt:25 - Shape of head.cls_preds.0.weight in checkpoint is torch.Size([80, 320, 1, 1]), while shape of head.cls_preds.0.weight in model is torch.Size([1, 320, 1, 1]).
+2023-08-27 06:58:33.607 | WARNING  | yolox.utils.checkpoint:load_ckpt:25 - Shape of head.cls_preds.0.bias in checkpoint is torch.Size([80]), while shape of head.cls_preds.0.bias in model is torch.Size([1]).
+2023-08-27 06:58:33.607 | WARNING  | yolox.utils.checkpoint:load_ckpt:25 - Shape of head.cls_preds.1.weight in checkpoint is torch.Size([80, 320, 1, 1]), while shape of head.cls_preds.1.weight in model is torch.Size([1, 320, 1, 1]).
+2023-08-27 06:58:33.607 | WARNING  | yolox.utils.checkpoint:load_ckpt:25 - Shape of head.cls_preds.1.bias in checkpoint is torch.Size([80]), while shape of head.cls_preds.1.bias in model is torch.Size([1]).
+2023-08-27 06:58:33.607 | WARNING  | yolox.utils.checkpoint:load_ckpt:25 - Shape of head.cls_preds.2.weight in checkpoint is torch.Size([80, 320, 1, 1]), while shape of head.cls_preds.2.weight in model is torch.Size([1, 320, 1, 1]).
+2023-08-27 06:58:33.608 | WARNING  | yolox.utils.checkpoint:load_ckpt:25 - Shape of head.cls_preds.2.bias in checkpoint is torch.Size([80]), while shape of head.cls_preds.2.bias in model is torch.Size([1]).
+2023-08-27 06:58:33.685 | INFO     | yolox.data.datasets.mot:__init__:39 - loading annotations into memory...
+2023-08-27 06:58:34.029 | INFO     | yolox.data.datasets.mot:__init__:39 - Done (t=0.34s)
+2023-08-27 06:58:34.029 | INFO     | pycocotools.coco:__init__:86 - creating index...
+2023-08-27 06:58:34.088 | INFO     | pycocotools.coco:__init__:86 - index created!
+2023-08-27 06:58:34.492 | INFO     | yolox.core.trainer:before_train:148 - init prefetcher, this might take one minute or less...
+2023-08-27 06:58:34.964 | ERROR    | yolox.core.launch:launch:90 - An error has been caught in function 'launch', process 'MainProcess' (1925), thread 'MainThread' (140434642420672):
+Traceback (most recent call last):
+
+  File "tools/train.py", line 114, in <module>
+    launch(
+    └ <function launch at 0x7fb7e13cd9d0>
+
+> File "/remote-home/zhengyiyao/topictrack-official/external/YOLOX/yolox/core/launch.py", line 90, in launch
+    main_func(*args)
+    │          └ (╒══════════════════╤════════════════════════════════════════════════════════════════════════════════════════════════════════...
+    └ <function main at 0x7fb7e13cdd30>
+
+  File "tools/train.py", line 100, in main
+    trainer.train()
+    │       └ <function Trainer.train at 0x7fb7e1365940>
+    └ <yolox.core.trainer.Trainer object at 0x7fb97b43cc70>
+
+  File "/remote-home/zhengyiyao/topictrack-official/external/YOLOX/yolox/core/trainer.py", line 70, in train
+    self.before_train()
+    │    └ <function Trainer.before_train at 0x7fb7e100da60>
+    └ <yolox.core.trainer.Trainer object at 0x7fb97b43cc70>
+
+  File "/remote-home/zhengyiyao/topictrack-official/external/YOLOX/yolox/core/trainer.py", line 149, in before_train
+    self.prefetcher = DataPrefetcher(self.train_loader)
+    │                 │              │    └ <yolox.data.dataloading.DataLoader object at 0x7fb7905b0e80>
+    │                 │              └ <yolox.core.trainer.Trainer object at 0x7fb97b43cc70>
+    │                 └ <class 'yolox.data.data_prefetcher.DataPrefetcher'>
+    └ <yolox.core.trainer.Trainer object at 0x7fb97b43cc70>
+
+  File "/remote-home/zhengyiyao/topictrack-official/external/YOLOX/yolox/data/data_prefetcher.py", line 26, in __init__
+    self.preload()
+    │    └ <function DataPrefetcher.preload at 0x7fb7e10a21f0>
+    └ <yolox.data.data_prefetcher.DataPrefetcher object at 0x7fb7905b0be0>
+
+  File "/remote-home/zhengyiyao/topictrack-official/external/YOLOX/yolox/data/data_prefetcher.py", line 30, in preload
+    self.next_input, self.next_target, _, _ = next(self.loader)
+    │                │                             │    └ <torch.utils.data.dataloader._MultiProcessingDataLoaderIter object at 0x7fb7905b0c10>
+    │                │                             └ <yolox.data.data_prefetcher.DataPrefetcher object at 0x7fb7905b0be0>
+    │                └ <yolox.data.data_prefetcher.DataPrefetcher object at 0x7fb7905b0be0>
+    └ <yolox.data.data_prefetcher.DataPrefetcher object at 0x7fb7905b0be0>
+
+  File "/opt/conda/envs/TOPICTrack/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 517, in __next__
+    data = self._next_data()
+           │    └ <function _MultiProcessingDataLoaderIter._next_data at 0x7fb7eefec940>
+           └ <torch.utils.data.dataloader._MultiProcessingDataLoaderIter object at 0x7fb7905b0c10>
+  File "/opt/conda/envs/TOPICTrack/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 1199, in _next_data
+    return self._process_data(data)
+           │    │             └ <torch._utils.ExceptionWrapper object at 0x7fb7905b0b80>
+           │    └ <function _MultiProcessingDataLoaderIter._process_data at 0x7fb7eefeca60>
+           └ <torch.utils.data.dataloader._MultiProcessingDataLoaderIter object at 0x7fb7905b0c10>
+  File "/opt/conda/envs/TOPICTrack/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 1225, in _process_data
+    data.reraise()
+    │    └ <function ExceptionWrapper.reraise at 0x7fb97b3348b0>
+    └ <torch._utils.ExceptionWrapper object at 0x7fb7905b0b80>
+  File "/opt/conda/envs/TOPICTrack/lib/python3.8/site-packages/torch/_utils.py", line 429, in reraise
+    raise self.exc_type(msg)
+          │    │        └ 'Caught AssertionError in DataLoader worker process 0.\nOriginal Traceback (most recent call last):\n  File "/opt/conda/envs/...
+          │    └ <class 'AssertionError'>
+          └ <torch._utils.ExceptionWrapper object at 0x7fb7905b0b80>
+
+AssertionError: Caught AssertionError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/opt/conda/envs/TOPICTrack/lib/python3.8/site-packages/torch/utils/data/_utils/worker.py", line 202, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/opt/conda/envs/TOPICTrack/lib/python3.8/site-packages/torch/utils/data/_utils/fetch.py", line 44, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/opt/conda/envs/TOPICTrack/lib/python3.8/site-packages/torch/utils/data/_utils/fetch.py", line 44, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/remote-home/zhengyiyao/topictrack-official/external/YOLOX/yolox/data/datasets/datasets_wrapper.py", line 121, in wrapper
+    ret_val = getitem_fn(self, index)
+  File "/remote-home/zhengyiyao/topictrack-official/external/YOLOX/yolox/data/datasets/mosaicdetection.py", line 91, in __getitem__
+    img, _labels, _, _ = self._dataset.pull_item(index)
+  File "/remote-home/zhengyiyao/topictrack-official/external/YOLOX/yolox/data/datasets/mot.py", line 107, in pull_item
+    assert img is not None
+AssertionError
+
+2023-08-27 07:00:55.835 | INFO     | yolox.core.trainer:before_train:124 - args: Namespace(batch_size=4, ckpt='external/weights/yolox_x.pth', devices=1, dist_backend='nccl', dist_url=None, exp_file='exps/example/mot/yolox_x_ablation.py', experiment_name='yolox_x_ablation', fp16=True, local_rank=0, machine_rank=0, name=None, num_machines=1, occupy=True, opts=[], resume=False, start_epoch=None)
+2023-08-27 07:00:55.837 | INFO     | yolox.core.trainer:before_train:125 - exp value:
+╒══════════════════╤════════════════════╕
+│ keys             │ values             │
+╞══════════════════╪════════════════════╡
+│ seed             │ None               │
+├──────────────────┼────────────────────┤
+│ output_dir       │ './YOLOX_outputs'  │
+├──────────────────┼────────────────────┤
+│ print_interval   │ 20                 │
+├──────────────────┼────────────────────┤
+│ eval_interval    │ 5                  │
+├──────────────────┼────────────────────┤
+│ num_classes      │ 1                  │
+├──────────────────┼────────────────────┤
+│ depth            │ 1.33               │
+├──────────────────┼────────────────────┤
+│ width            │ 1.25               │
+├──────────────────┼────────────────────┤
+│ data_num_workers │ 4                  │
+├──────────────────┼────────────────────┤
+│ input_size       │ (800, 1440)        │
+├──────────────────┼────────────────────┤
+│ random_size      │ (18, 32)           │
+├──────────────────┼────────────────────┤
+│ train_ann        │ 'train.json'       │
+├──────────────────┼────────────────────┤
+│ val_ann          │ 'val_half.json'    │
+├──────────────────┼────────────────────┤
+│ degrees          │ 10.0               │
+├──────────────────┼────────────────────┤
+│ translate        │ 0.1                │
+├──────────────────┼────────────────────┤
+│ scale            │ (0.1, 2)           │
+├──────────────────┼────────────────────┤
+│ mscale           │ (0.8, 1.6)         │
+├──────────────────┼────────────────────┤
+│ shear            │ 2.0                │
+├──────────────────┼────────────────────┤
+│ perspective      │ 0.0                │
+├──────────────────┼────────────────────┤
+│ enable_mixup     │ True               │
+├──────────────────┼────────────────────┤
+│ warmup_epochs    │ 1                  │
+├──────────────────┼────────────────────┤
+│ max_epoch        │ 80                 │
+├──────────────────┼────────────────────┤
+│ warmup_lr        │ 0                  │
+├──────────────────┼────────────────────┤
+│ basic_lr_per_img │ 1.5625e-05         │
+├──────────────────┼────────────────────┤
+│ scheduler        │ 'yoloxwarmcos'     │
+├──────────────────┼────────────────────┤
+│ no_aug_epochs    │ 10                 │
+├──────────────────┼────────────────────┤
+│ min_lr_ratio     │ 0.05               │
+├──────────────────┼────────────────────┤
+│ ema              │ True               │
+├──────────────────┼────────────────────┤
+│ weight_decay     │ 0.0005             │
+├──────────────────┼────────────────────┤
+│ momentum         │ 0.9                │
+├──────────────────┼────────────────────┤
+│ exp_name         │ 'yolox_x_ablation' │
+├──────────────────┼────────────────────┤
+│ test_size        │ (800, 1440)        │
+├──────────────────┼────────────────────┤
+│ test_conf        │ 0.1                │
+├──────────────────┼────────────────────┤
+│ nmsthre          │ 0.7                │
+╘══════════════════╧════════════════════╛
+2023-08-27 07:00:56.836 | INFO     | yolox.core.trainer:before_train:130 - Model Summary: Params: 99.00M, Gflops: 793.21
+2023-08-27 07:01:00.581 | INFO     | yolox.core.trainer:resume_train:289 - loading checkpoint for fine tuning
+2023-08-27 07:01:01.114 | WARNING  | yolox.utils.checkpoint:load_ckpt:25 - Shape of head.cls_preds.0.weight in checkpoint is torch.Size([80, 320, 1, 1]), while shape of head.cls_preds.0.weight in model is torch.Size([1, 320, 1, 1]).
+2023-08-27 07:01:01.115 | WARNING  | yolox.utils.checkpoint:load_ckpt:25 - Shape of head.cls_preds.0.bias in checkpoint is torch.Size([80]), while shape of head.cls_preds.0.bias in model is torch.Size([1]).
+2023-08-27 07:01:01.118 | WARNING  | yolox.utils.checkpoint:load_ckpt:25 - Shape of head.cls_preds.1.weight in checkpoint is torch.Size([80, 320, 1, 1]), while shape of head.cls_preds.1.weight in model is torch.Size([1, 320, 1, 1]).
+2023-08-27 07:01:01.119 | WARNING  | yolox.utils.checkpoint:load_ckpt:25 - Shape of head.cls_preds.1.bias in checkpoint is torch.Size([80]), while shape of head.cls_preds.1.bias in model is torch.Size([1]).
+2023-08-27 07:01:01.120 | WARNING  | yolox.utils.checkpoint:load_ckpt:25 - Shape of head.cls_preds.2.weight in checkpoint is torch.Size([80, 320, 1, 1]), while shape of head.cls_preds.2.weight in model is torch.Size([1, 320, 1, 1]).
+2023-08-27 07:01:01.120 | WARNING  | yolox.utils.checkpoint:load_ckpt:25 - Shape of head.cls_preds.2.bias in checkpoint is torch.Size([80]), while shape of head.cls_preds.2.bias in model is torch.Size([1]).
+2023-08-27 07:01:01.230 | INFO     | yolox.data.datasets.mot:__init__:39 - loading annotations into memory...
+2023-08-27 07:01:01.585 | INFO     | yolox.data.datasets.mot:__init__:39 - Done (t=0.35s)
+2023-08-27 07:01:01.585 | INFO     | pycocotools.coco:__init__:86 - creating index...
+2023-08-27 07:01:01.640 | INFO     | pycocotools.coco:__init__:86 - index created!
+2023-08-27 07:01:02.040 | INFO     | yolox.core.trainer:before_train:148 - init prefetcher, this might take one minute or less...
+2023-08-27 07:01:09.764 | INFO     | yolox.data.datasets.mot:__init__:39 - loading annotations into memory...
+2023-08-27 07:01:10.047 | INFO     | yolox.data.datasets.mot:__init__:39 - Done (t=0.28s)
+2023-08-27 07:01:10.047 | INFO     | pycocotools.coco:__init__:86 - creating index...
+2023-08-27 07:01:10.078 | INFO     | pycocotools.coco:__init__:86 - index created!
+2023-08-27 07:01:10.224 | INFO     | yolox.core.trainer:before_train:176 - Training start...
+2023-08-27 07:01:10.225 | INFO     | yolox.core.trainer:before_epoch:187 - ---> start train epoch1
+2023-08-27 07:01:27.090 | INFO     | yolox.core.trainer:after_iter:242 - epoch: 1/80, iter: 20/1329, mem: 17917Mb, iter_time: 0.842s, data_time: 0.001s, total_loss: 9.599, iou_loss: 2.621, l1_loss: 0.000, conf_loss: 3.137, cls_loss: 3.841, lr: 1.415e-08, size: 704, ETA: 1 day, 0:52:26
+2023-08-27 07:01:49.351 | INFO     | yolox.core.trainer:after_iter:242 - epoch: 1/80, iter: 40/1329, mem: 18247Mb, iter_time: 1.112s, data_time: 0.001s, total_loss: 10.048, iou_loss: 2.469, l1_loss: 0.000, conf_loss: 3.674, cls_loss: 3.904, lr: 5.662e-08, size: 608, ETA: 1 day, 4:51:04
+2023-08-27 07:02:01.652 | INFO     | yolox.core.trainer:after_iter:242 - epoch: 1/80, iter: 60/1329, mem: 18247Mb, iter_time: 0.614s, data_time: 0.001s, total_loss: 9.150, iou_loss: 2.513, l1_loss: 0.000, conf_loss: 2.960, cls_loss: 3.677, lr: 1.274e-07, size: 736, ETA: 1 day, 1:16:25
+2023-08-27 07:02:19.869 | INFO     | yolox.core.trainer:after_train:180 - Training of experiment is done and the best AP is 0.00

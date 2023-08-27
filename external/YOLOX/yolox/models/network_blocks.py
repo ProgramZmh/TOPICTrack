@@ -1,4 +1,6 @@
-
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+# Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
 
 import torch
 import torch.nn as nn
@@ -31,7 +33,7 @@ class BaseConv(nn.Module):
         self, in_channels, out_channels, ksize, stride, groups=1, bias=False, act="silu"
     ):
         super().__init__()
-       
+        # same padding
         pad = (ksize - 1) // 2
         self.conv = nn.Conv2d(
             in_channels,
@@ -75,7 +77,7 @@ class DWConv(nn.Module):
 
 
 class Bottleneck(nn.Module):
-    
+    # Standard bottleneck
     def __init__(
         self,
         in_channels,
@@ -155,9 +157,15 @@ class CSPLayer(nn.Module):
         depthwise=False,
         act="silu",
     ):
-       
+        """
+        Args:
+            in_channels (int): input channels.
+            out_channels (int): output channels.
+            n (int): number of Bottlenecks. Default value: 1.
+        """
+        # ch_in, ch_out, number, shortcut, groups, expansion
         super().__init__()
-        hidden_channels = int(out_channels * expansion)  
+        hidden_channels = int(out_channels * expansion)  # hidden channels
         self.conv1 = BaseConv(in_channels, hidden_channels, 1, stride=1, act=act)
         self.conv2 = BaseConv(in_channels, hidden_channels, 1, stride=1, act=act)
         self.conv3 = BaseConv(2 * hidden_channels, out_channels, 1, stride=1, act=act)
@@ -178,14 +186,14 @@ class CSPLayer(nn.Module):
 
 
 class Focus(nn.Module):
-  
+    """Focus width and height information into channel space."""
 
     def __init__(self, in_channels, out_channels, ksize=1, stride=1, act="silu"):
         super().__init__()
         self.conv = BaseConv(in_channels * 4, out_channels, ksize, stride, act=act)
 
     def forward(self, x):
-      
+        # shape of x (b,c,w,h) -> y(b,4c,w/2,h/2)
         patch_top_left = x[..., ::2, ::2]
         patch_top_right = x[..., ::2, 1::2]
         patch_bot_left = x[..., 1::2, ::2]

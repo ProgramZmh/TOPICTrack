@@ -11,7 +11,7 @@ import numpy as np
 import dataset
 import utils
 from external.adaptors import detector
-from trackers import integrated_ocsort_embedding as tracker_module
+from trackers import ocsort_embedding as tracker_module
 
 
 def get_main_args():
@@ -29,11 +29,8 @@ def get_main_args():
         default=1.6,
         help="threshold for filtering out boxes of which aspect ratio are above the given value.",
     )
-    parser.add_argument(
-        "--post",
-        action="store_true",
-        help="run post-processing linear interpolation.",
-    )
+    parser.add_argument("--post", type=bool, default=True,
+                        help="run post-processing linear interpolation.",)
     parser.add_argument("--w_assoc_emb", type=float,
                         default=0.75, help="Combine weight for emb cost")
     parser.add_argument(
@@ -54,7 +51,11 @@ def get_main_args():
         default=0.3,
         help="gate",
     )
-    parser.add_argument("--new_kf_off", action="store_true")
+
+    parser.add_argument("--new_kf_off", type=bool, default=True)
+    # TODO:
+    # --AARM action="store_true"
+    # --TOPIC action="store_true"
     parser.add_argument("--metric", type=str, default="res_recons")
     parser.add_argument("--two_round_off", action="store_true")
 
@@ -66,52 +67,52 @@ def get_main_args():
         args.result_folder = os.path.join(args.result_folder, "MOT20-val")
     elif args.dataset == "dance":
         args.result_folder = os.path.join(args.result_folder, "DANCE-val")
-    elif args.dataset == "bee":
-        args.result_folder = os.path.join(args.result_folder, "BEE-val")
+    elif args.dataset == "BEE23":
+        args.result_folder = os.path.join(args.result_folder, "BEE23-val")
     elif args.dataset == "gmot":
         args.result_folder = os.path.join(args.result_folder, "GMOT-val")
     if args.test_dataset:
         args.result_folder.replace("-val", "-test")
-    
-    print(args)
     return args
+
 
 def main():
     np.set_printoptions(suppress=True, precision=5)
-
     args = get_main_args()
-    
+
     if args.dataset == "mot17":
         if args.test_dataset:
-            detector_path = "external/weights/bytetrack_x_mot17.pth.tar"
+            detector_path = "external/weights/topictrack_mot17.pth.tar"
         else:
-            detector_path = "external/weights/bytetrack_ablation.pth.tar"
-            
+            detector_path = "external/weights/topictrack_ablation.pth.tar"
         size = (800, 1440)
     elif args.dataset == "mot20":
         if args.test_dataset:
-            detector_path = "external/weights/bytetrack_x_mot20.tar"
+            detector_path = "external/weights/topictrack_mot20.tar"
             size = (896, 1600)
         else:
-          
-            detector_path = "external/weights/bytetrack_x_mot17.pth.tar"
-         
+
+            detector_path = "external/weights/topictrack_mot17.pth.tar"
             size = (800, 1440)
     elif args.dataset == "dance":
-      
-        detector_path = "external/weights/bytetrack_dance_model.pth.tar"
+
+        detector_path = "external/weights/topictrack_dance.pth.tar"
         size = (800, 1440)
-    elif args.dataset == "bee":
-        detector_path = "external/weights/bee.pth.tar" 
+    elif args.dataset == "BEE23":
+
+        detector_path = "external/weights/topictrack_bee23.pth.tar"
         size = (800, 1440)
     elif args.dataset == "gmot":
-        detector_path = "external/weights/gmot.pth.tar"
+
+        detector_path = "external/weights/topictrack_gmot.pth.tar"
+
         size = (800, 1440)
     else:
         raise RuntimeError(
             "Need to update paths for detector for extra datasets.")
     det = detector.Detector("yolox", detector_path, args.dataset)
     loader = dataset.get_mot_loader(args.dataset, args.test_dataset, size=size)
+
     oc_sort_args = dict(
         args=args,
         det_thresh=args.track_thresh,
@@ -124,6 +125,7 @@ def main():
         inertia=args.inertia,
         w_association_emb=args.w_assoc_emb,
         new_kf_off=args.new_kf_off,
+
     )
     tracker = tracker_module.ocsort.OCSort(**oc_sort_args)
     results = {}
@@ -134,14 +136,15 @@ def main():
         frame_id = info[2].item()
 
         video_name = info[4][0].split("/")[0]
-        
-        tag = f"{video_name}:{frame_id}"
 
+        tag = f"{video_name}:{frame_id}"
+        print(tag)
         if video_name not in results:
             results[video_name] = []
         img = img.cuda()
 
         if frame_id == 1:
+
             tracker.dump_cache()
             tracker = tracker_module.ocsort.OCSort(**oc_sort_args)
 
@@ -151,8 +154,8 @@ def main():
         if pred is None:
             continue
 
-        
-        targets = tracker.update(pred, img, np_img[0].numpy(), tag, args.metric, args.two_round_off)
+        targets = tracker.update(
+            pred, img, np_img[0].numpy(), tag, args.metric, args.two_round_off)
         tlwhs, ids = utils.filter_targets(
             targets, args.aspect_ratio_thresh, args.min_box_area, args.dataset)
 

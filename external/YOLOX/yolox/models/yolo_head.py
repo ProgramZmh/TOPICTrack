@@ -1,13 +1,16 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
 
-
-import math
 from loguru import logger
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from yolox.utils import bboxes_iou, meshgrid
+from yolox.utils import bboxes_iou
+
+import math
 
 from .losses import IOUloss
 from .network_blocks import BaseConv, DWConv
@@ -23,13 +26,16 @@ class YOLOXHead(nn.Module):
         act="silu",
         depthwise=False,
     ):
-        
+        """
+        Args:
+            act (str): activation type of conv. Defalut value: "silu".
+            depthwise (bool): wheather apply depthwise conv in conv branch. Defalut value: False.
+        """
         super().__init__()
 
         self.n_anchors = 1
-      
         self.num_classes = num_classes
-        self.decode_in_inference = True  
+        self.decode_in_inference = True  # for deploy, set to False
 
         self.cls_convs = nn.ModuleList()
         self.reg_convs = nn.ModuleList()
@@ -123,6 +129,7 @@ class YOLOXHead(nn.Module):
         self.iou_loss = IOUloss(reduction="none")
         self.strides = strides
         self.grids = [torch.zeros(1)] * len(in_channels)
+        self.expanded_strides = [None] * len(in_channels)
 
     def initialize_biases(self, prior_prob):
         for conv in self.cls_preds:
@@ -199,7 +206,7 @@ class YOLOXHead(nn.Module):
             )
         else:
             self.hw = [x.shape[-2:] for x in outputs]
-           
+            # [batch, n_anchors_all, 85]
             outputs = torch.cat(
                 [x.flatten(start_dim=2) for x in outputs], dim=2
             ).permute(0, 2, 1)
@@ -215,7 +222,7 @@ class YOLOXHead(nn.Module):
         n_ch = 5 + self.num_classes
         hsize, wsize = output.shape[-2:]
         if grid.shape[2:4] != output.shape[2:4]:
-            yv, xv = meshgrid([torch.arange(hsize), torch.arange(wsize)])
+            yv, xv = torch.meshgrid([torch.arange(hsize), torch.arange(wsize)])
             grid = torch.stack((xv, yv), 2).view(1, 1, hsize, wsize, 2).type(dtype)
             self.grids[k] = grid
 
@@ -232,7 +239,7 @@ class YOLOXHead(nn.Module):
         grids = []
         strides = []
         for (hsize, wsize), stride in zip(self.hw, self.strides):
-            yv, xv = meshgrid([torch.arange(hsize), torch.arange(wsize)])
+            yv, xv = torch.meshgrid([torch.arange(hsize), torch.arange(wsize)])
             grid = torch.stack((xv, yv), 2).view(1, -1, 2)
             grids.append(grid)
             shape = grid.shape[:2]
@@ -256,15 +263,21 @@ class YOLOXHead(nn.Module):
         origin_preds,
         dtype,
     ):
-        bbox_preds = outputs[:, :, :4]  
-        obj_preds = outputs[:, :, 4].unsqueeze(-1)  
-        cls_preds = outputs[:, :, 5:] 
+        bbox_preds = outputs[:, :, :4]  # [batch, n_anchors_all, 4]
+        obj_preds = outputs[:, :, 4].unsqueeze(-1)  # [batch, n_anchors_all, 1]
+        cls_preds = outputs[:, :, 5:]  # [batch, n_anchors_all, n_cls]
 
-        nlabel = (labels.sum(dim=2) > 0).sum(dim=1)  
+        # calculate targets
+        mixup = labels.shape[2] > 5
+        if mixup:
+            label_cut = labels[..., :5]
+        else:
+            label_cut = labels
+        nlabel = (label_cut.sum(dim=2) > 0).sum(dim=1)  # number of objects
 
         total_num_anchors = outputs.shape[1]
-        x_shifts = torch.cat(x_shifts, 1)  
-        y_shifts = torch.cat(y_shifts, 1)  
+        x_shifts = torch.cat(x_shifts, 1)  # [1, n_anchors_all]
+        y_shifts = torch.cat(y_shifts, 1)  # [1, n_anchors_all]
         expanded_strides = torch.cat(expanded_strides, 1)
         if self.use_l1:
             origin_preds = torch.cat(origin_preds, 1)
@@ -291,7 +304,7 @@ class YOLOXHead(nn.Module):
                 gt_bboxes_per_image = labels[batch_idx, :num_gt, 1:5]
                 gt_classes = labels[batch_idx, :num_gt, 0]
                 bboxes_preds_per_image = bbox_preds[batch_idx]
-
+                
                 try:
                     (
                         gt_matched_classes,
@@ -299,7 +312,7 @@ class YOLOXHead(nn.Module):
                         pred_ious_this_matching,
                         matched_gt_inds,
                         num_fg_img,
-                    ) = self.get_assignments( 
+                    ) = self.get_assignments(  # noqa
                         batch_idx,
                         num_gt,
                         total_num_anchors,
@@ -315,16 +328,15 @@ class YOLOXHead(nn.Module):
                         labels,
                         imgs,
                     )
-                except RuntimeError as e:
-                   
-                    if "CUDA out of memory. " not in str(e):
-                        raise  
-
-                    logger.error(
+                except RuntimeError:
+                    logger.info(
                         "OOM RuntimeError is raised due to the huge memory cost during label assignment. \
                            CPU mode is applied in this batch. If you want to avoid this issue, \
                            try to reduce the batch size or image size."
                     )
+                    print("OOM RuntimeError is raised due to the huge memory cost during label assignment. \
+                           CPU mode is applied in this batch. If you want to avoid this issue, \
+                           try to reduce the batch size or image size.")
                     torch.cuda.empty_cache()
                     (
                         gt_matched_classes,
@@ -332,7 +344,7 @@ class YOLOXHead(nn.Module):
                         pred_ious_this_matching,
                         matched_gt_inds,
                         num_fg_img,
-                    ) = self.get_assignments(  
+                    ) = self.get_assignments(  # noqa
                         batch_idx,
                         num_gt,
                         total_num_anchors,
@@ -349,7 +361,8 @@ class YOLOXHead(nn.Module):
                         imgs,
                         "cpu",
                     )
-
+                
+                
                 torch.cuda.empty_cache()
                 num_fg += num_fg_img
 
@@ -358,6 +371,7 @@ class YOLOXHead(nn.Module):
                 ) * pred_ious_this_matching.unsqueeze(-1)
                 obj_target = fg_mask.unsqueeze(-1)
                 reg_target = gt_bboxes_per_image[matched_gt_inds]
+
                 if self.use_l1:
                     l1_target = self.get_l1_target(
                         outputs.new_zeros((num_fg_img, 4)),
@@ -448,6 +462,7 @@ class YOLOXHead(nn.Module):
             x_shifts = x_shifts.cpu()
             y_shifts = y_shifts.cpu()
 
+        img_size = imgs.shape[2:]
         fg_mask, is_in_boxes_and_center = self.get_in_boxes_info(
             gt_bboxes_per_image,
             expanded_strides,
@@ -455,6 +470,7 @@ class YOLOXHead(nn.Module):
             y_shifts,
             total_num_anchors,
             num_gt,
+            img_size
         )
 
         bboxes_preds_per_image = bboxes_preds_per_image[fg_mask]
@@ -525,6 +541,7 @@ class YOLOXHead(nn.Module):
         y_shifts,
         total_num_anchors,
         num_gt,
+        img_size
     ):
         expanded_strides_per_image = expanded_strides[0]
         x_shifts_per_image = x_shifts[0] * expanded_strides_per_image
@@ -533,7 +550,7 @@ class YOLOXHead(nn.Module):
             (x_shifts_per_image + 0.5 * expanded_strides_per_image)
             .unsqueeze(0)
             .repeat(num_gt, 1)
-        )  
+        )  # [n_anchor] -> [n_gt, n_anchor]
         y_centers_per_image = (
             (y_shifts_per_image + 0.5 * expanded_strides_per_image)
             .unsqueeze(0)
@@ -569,20 +586,24 @@ class YOLOXHead(nn.Module):
 
         is_in_boxes = bbox_deltas.min(dim=-1).values > 0.0
         is_in_boxes_all = is_in_boxes.sum(dim=0) > 0
-     
+        # in fixed center
 
         center_radius = 2.5
+        # clip center inside image
+        gt_bboxes_per_image_clip = gt_bboxes_per_image[:, 0:2].clone()
+        gt_bboxes_per_image_clip[:, 0] = torch.clamp(gt_bboxes_per_image_clip[:, 0], min=0, max=img_size[1])
+        gt_bboxes_per_image_clip[:, 1] = torch.clamp(gt_bboxes_per_image_clip[:, 1], min=0, max=img_size[0])
 
-        gt_bboxes_per_image_l = (gt_bboxes_per_image[:, 0]).unsqueeze(1).repeat(
+        gt_bboxes_per_image_l = (gt_bboxes_per_image_clip[:, 0]).unsqueeze(1).repeat(
             1, total_num_anchors
         ) - center_radius * expanded_strides_per_image.unsqueeze(0)
-        gt_bboxes_per_image_r = (gt_bboxes_per_image[:, 0]).unsqueeze(1).repeat(
+        gt_bboxes_per_image_r = (gt_bboxes_per_image_clip[:, 0]).unsqueeze(1).repeat(
             1, total_num_anchors
         ) + center_radius * expanded_strides_per_image.unsqueeze(0)
-        gt_bboxes_per_image_t = (gt_bboxes_per_image[:, 1]).unsqueeze(1).repeat(
+        gt_bboxes_per_image_t = (gt_bboxes_per_image_clip[:, 1]).unsqueeze(1).repeat(
             1, total_num_anchors
         ) - center_radius * expanded_strides_per_image.unsqueeze(0)
-        gt_bboxes_per_image_b = (gt_bboxes_per_image[:, 1]).unsqueeze(1).repeat(
+        gt_bboxes_per_image_b = (gt_bboxes_per_image_clip[:, 1]).unsqueeze(1).repeat(
             1, total_num_anchors
         ) + center_radius * expanded_strides_per_image.unsqueeze(0)
 
@@ -594,34 +615,38 @@ class YOLOXHead(nn.Module):
         is_in_centers = center_deltas.min(dim=-1).values > 0.0
         is_in_centers_all = is_in_centers.sum(dim=0) > 0
 
+        # in boxes and in centers
         is_in_boxes_anchor = is_in_boxes_all | is_in_centers_all
 
         is_in_boxes_and_center = (
             is_in_boxes[:, is_in_boxes_anchor] & is_in_centers[:, is_in_boxes_anchor]
         )
+        del gt_bboxes_per_image_clip
         return is_in_boxes_anchor, is_in_boxes_and_center
 
     def dynamic_k_matching(self, cost, pair_wise_ious, gt_classes, num_gt, fg_mask):
-        
-        matching_matrix = torch.zeros_like(cost, dtype=torch.uint8)
+        # Dynamic K
+        # ---------------------------------------------------------------
+        matching_matrix = torch.zeros_like(cost)
 
         ious_in_boxes_matrix = pair_wise_ious
         n_candidate_k = min(10, ious_in_boxes_matrix.size(1))
         topk_ious, _ = torch.topk(ious_in_boxes_matrix, n_candidate_k, dim=1)
         dynamic_ks = torch.clamp(topk_ious.sum(1).int(), min=1)
-        dynamic_ks = dynamic_ks.tolist()
         for gt_idx in range(num_gt):
-            _, pos_idx = torch.topk(cost[gt_idx], k=dynamic_ks[gt_idx], largest=False)
-            matching_matrix[gt_idx][pos_idx] = 1
+            _, pos_idx = torch.topk(
+                cost[gt_idx], k=dynamic_ks[gt_idx].item(), largest=False
+            )
+            matching_matrix[gt_idx][pos_idx] = 1.0
 
         del topk_ious, dynamic_ks, pos_idx
 
         anchor_matching_gt = matching_matrix.sum(0)
         if (anchor_matching_gt > 1).sum() > 0:
-            _, cost_argmin = torch.min(cost[:, anchor_matching_gt > 1], dim=0)
-            matching_matrix[:, anchor_matching_gt > 1] *= 0
-            matching_matrix[cost_argmin, anchor_matching_gt > 1] = 1
-        fg_mask_inboxes = matching_matrix.sum(0) > 0
+            cost_min, cost_argmin = torch.min(cost[:, anchor_matching_gt > 1], dim=0)
+            matching_matrix[:, anchor_matching_gt > 1] *= 0.0
+            matching_matrix[cost_argmin, anchor_matching_gt > 1] = 1.0
+        fg_mask_inboxes = matching_matrix.sum(0) > 0.0
         num_fg = fg_mask_inboxes.sum().item()
 
         fg_mask[fg_mask.clone()] = fg_mask_inboxes
