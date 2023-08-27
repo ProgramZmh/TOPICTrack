@@ -128,13 +128,7 @@ sh run/mot17_half_train.sh
 Or
 
 ```shell
-python3 tools/train.py -f exps/example/mot/yolox_x_ablation.py \
- -d 1 \
- -b 4 \
- --fp16 \
- -o \
- -c \
- external/weights/yolox_x.pth
+python3 tools/train.py -f exps/example/mot/yolox_x_ablation.py -d 1 -b 4 --fp16 -o -c external/weights/yolox_x.pth
 ```
 
 #### Train MOT17 test model 
@@ -148,13 +142,7 @@ sh run/mot17_train.sh
 Or
 
 ```shell
-python3 tools/train.py -f exps/example/mot/yolox_x_mot17_train.py \
- -d 1 \
- -b 4 \
- --fp16 \
- -o \
- -c \
- external/weights/yolox_x.pth
+python3 tools/train.py -f exps/example/mot/yolox_x_mot17_train.py -d 1 -b 4 --fp16 -o -c external/weights/yolox_x.pth
 ```
 
 #### Train MOT20 test model 
@@ -168,13 +156,7 @@ sh run/mot20_train.sh
 Or
 
 ```shell
-python3 tools/train.py -f exps/example/mot/yolox_x_mix_mot20_ch.py \
- -d 1 \
- -b 4 \
- --fp16 \
- -o \
- -c \
- external/weights/yolox_x.pth
+python3 tools/train.py -f exps/example/mot/yolox_x_mix_mot20_ch.py -d 1 -b 4 --fp16 -o -c external/weights/yolox_x.pth
 ```
 
 #### Train DanceTrack test model 
@@ -188,13 +170,7 @@ sh run/dancetrack_train.sh
 Or
 
 ```shell
-python3 tools/train.py -f exps/example/mot/yolox_x_dance_train.py \
- -d 1 \
- -b 4 \
- --fp16 \
- -o \
- -c \
- external/weights/yolox_x.pth
+python3 tools/train.py -f exps/example/mot/yolox_x_dance_train.py -d 1 -b 4 --fp16 -o -c external/weights/yolox_x.pth
 ```
 
 #### Train GMOT-40 test model 
@@ -208,13 +184,7 @@ sh run/gmot_train.sh
 Or
 
 ```shell
-python3 tools/train.py -f exps/example/mot/yolox_x_gmot_train.py \
- -d 1 \
- -b 4 \
- --fp16 \
- -o \
- -c \
- external/weights/yolox_x.pth
+python3 tools/train.py -f exps/example/mot/yolox_x_gmot_train.py -d 1 -b 4 --fp16 -o -c external/weights/yolox_x.pth
 ```
 
 #### Train BEE23 test model 
@@ -228,13 +198,7 @@ sh run/bee_train.sh
 Or
 
 ```shell
-python3 tools/train.py -f exps/example/mot/yolox_x_bee23_train.py \
- -d 1 \
- -b 4 \
- --fp16 \
- -o \
- -c \
- external/weights/yolox_x.pth
+python3 tools/train.py -f exps/example/mot/yolox_x_bee23_train.py -d 1 -b 4 --fp16 -o -c external/weights/yolox_x.pth
 ```
 
 #### Train custom dataset
