@@ -15,11 +15,11 @@
 <p align="center"><img src="figs/demo.gif" width="800"/></p>
 
 ```
-python3 demo_mot17.py --exp_name mot17_test --dataset mot17 --test_dataset
-python3 demo_mot20.py --exp_name mot20_test --dataset mot20 --test_dataset
-python3 demo_dance.py --exp_name dance_test --dataset dance --test_dataset
-python3 demo_gmot.py --exp_name gmot_test --dataset gmot --test_dataset
-python3 demo_bee.py --exp_name bee_test --dataset BEE23 --test_dataset
+python3 demo.py --exp_name mot17_test --dataset mot17 --test_dataset
+python3 demo.py --exp_name mot20_test --dataset mot20 --test_dataset
+python3 demo.py --exp_name dance_test --dataset dance --test_dataset
+python3 demo.py --exp_name gmot_test --dataset gmot --test_dataset
+python3 demo.py --exp_name bee_test --dataset BEE23 --test_dataset
 ```
 
 

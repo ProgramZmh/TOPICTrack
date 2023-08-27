@@ -85,6 +85,7 @@ def get_main_args():
         args.result_folder.replace("-val", "-test")
     return args
 
+
 def sort_output(txt_path):
     with open(txt_path, 'r') as f:
         list = []
@@ -98,22 +99,22 @@ def sort_output(txt_path):
         f.close()
 
 
-def draw_gmot(video_id,gt_path, save_dir):
-    txt_name = gt_path + '/' + video_id + '.txt'  # txt文本内容
-    file_path_img = 'data/gmot/test/' + video_id + '/img1'  # img图片路径
-    img_num = len(os.listdir(file_path_img))/2
+def draw_dataset(video_id, gt_path, dataset, save_dir):
+    txt_name = gt_path + '/' + video_id + '.txt'
+    file_path_img = f'data/{dataset}/test/' + video_id + '/img1'
     frame_width = 1920
-    frame_height = 1080
-    output_video = os.path.join(save_dir,'gmot.mp4')
-    output = cv2.VideoWriter(output_video, cv2.VideoWriter_fourcc(*'mp4v'), 25, (frame_width, frame_height))
-    save_file_path = os.path.join(save_dir,video_id)
-    sort_output(txt_name) 
+    frame_height = 880
+    output_video = os.path.join(save_dir, f'{dataset}.mp4')
+    output = cv2.VideoWriter(output_video, cv2.VideoWriter_fourcc(
+        *'mp4v'), 25, (frame_width, frame_height))
+    save_file_path = os.path.join(save_dir, video_id)
+    sort_output(txt_name)
 
     source_file = open(txt_name)
     records = source_file.readlines()
-   
-    img_names = []
+
     i = 0
+    img_names = []
     for line in records:
         staff = line.split(',')
         img_name = staff[0]
@@ -121,55 +122,53 @@ def draw_gmot(video_id,gt_path, save_dir):
         if i == 0:
             num = int(float(staff[1])) - 1
         i += 1
-   
+
     name_dict = {}
     for i in img_names:
         if img_names.count(i):
             name_dict[i] = img_names.count(i)
-    
-    l =0
+
+    l = 0
     for idx in name_dict:
-        idx1 = int(idx) + int(img_num)
-        img = cv2.imread(os.path.join(file_path_img, str(idx1).rjust(6, '0') + '.jpg'))
+        img = cv2.imread(os.path.join(
+            file_path_img, str(idx).rjust(6, '0') + '.jpg'))
         for i in range(name_dict[idx]):
-           
+
             line = records[l]
-            l+=1
+            l += 1
             staff = line.split(',')
-           
-            id = staff[1] 
-            frame = staff[0]         
+
+            id = staff[1]
+            frame = staff[0]
             cls = staff[7]
             box = staff[2:6]
-           
-            
             cv2.rectangle(img, (int(float(box[0])), int(float(box[1]))),
-                        (int(float(box[0])) + int(float(box[2])), int(float(box[1])) + int(float(box[3]))),
-                        (255, 255, 0), 2,cv2.LINE_4)
+                          (int(float(box[0])) + int(float(box[2])),
+                           int(float(box[1])) + int(float(box[3]))),
+                          (255, 255, 0), 2, cv2.LINE_4)
             cv2.rectangle(img, (int(float(box[0])), int(float(box[1]))),
-                            ((int(float(box[0])) + 45), (int(float(box[1])) + 30)),
-                            (255,255,0), thickness=-1)
-            cv2.putText(img, str(int(float(id))), (int(float(box[0])), int(float(box[1]))+22),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, bottomLeftOrigin=False)
-            
-        txt = 'GMOT-40  ' + 'frame: ' + str(frame) + '  num: ' + str(i + 1)
-        cv2.putText(img, txt, (0, 45),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0, 0, 255), 4,cv2.LINE_AA)
-        img = cv2.resize(img,dsize=(1920,1080))
+                          ((int(float(box[0])) + 20),
+                           (int(float(box[1])) + 15)),
+                          (255, 255, 0), thickness=-1)
+            cv2.putText(img, str(int(float(id))), (int(float(box[0])), int(float(box[1]))+12),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2, cv2.LINE_AA)
+
+        txt = f'{dataset}  ' + 'frame: ' + str(frame) + '  num: ' + str(i + 1)
+        cv2.putText(img, txt, (0, 15),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2, cv2.LINE_AA)
+        img = cv2.resize(img, dsize=(1920, 1080))
+
+        img = img[0:880, 0:1920]
         output.write(img)
 
     output.release()
-
     source_file.close()
-
-
-
 
 
 def main():
     np.set_printoptions(suppress=True, precision=5)
     args = get_main_args()
-    
+
     if args.dataset == "mot17":
         if args.test_dataset:
             detector_path = "external/weights/topictrack_mot17.pth.tar"
@@ -181,20 +180,18 @@ def main():
             detector_path = "external/weights/topictrack_mot20.tar"
             size = (896, 1600)
         else:
-            
+
             detector_path = "external/weights/topictrack_mot17.pth.tar"
             size = (800, 1440)
     elif args.dataset == "dance":
-        
+
         detector_path = "external/weights/topictrack_dance.pth.tar"
         size = (800, 1440)
     elif args.dataset == "BEE23":
-     
-     
-        detector_path = "external/weights/bee23.pth.tar" 
+
+        detector_path = "external/weights/bee23.pth.tar"
         size = (800, 1440)
     elif args.dataset == "gmot":
-        
 
         detector_path = "external/weights/gmot.pth.tar"
 
@@ -226,10 +223,9 @@ def main():
     for (img, np_img), label, info, idx in loader:
 
         frame_id = info[2].item()
-       
+
         video_name = info[4][0].split("/")[0]
 
-        
         tag = f"{video_name}:{frame_id}"
 
         if video_name not in results:
@@ -237,7 +233,7 @@ def main():
         img = img.cuda()
 
         if frame_id == 1:
-            
+
             tracker.dump_cache()
             tracker = tracker_module.ocsort.OCSort(**oc_sort_args)
 
@@ -246,8 +242,9 @@ def main():
         pred = det(img, tag)
         if pred is None:
             continue
-        
-        targets = tracker.update(pred, img, np_img[0].numpy(), tag, args.metric, args.two_round_off)
+
+        targets = tracker.update(
+            pred, img, np_img[0].numpy(), tag, args.metric, args.two_round_off)
         tlwhs, ids = utils.filter_targets(
             targets, args.aspect_ratio_thresh, args.min_box_area, args.dataset)
 
@@ -276,16 +273,24 @@ def main():
         utils.dti(post_folder_data, post_folder_data)
         print(
             f"Linear interpolation post-processing applied, saved to {post_folder_data}.")
-   
+
     filename = os.listdir(folder)
     for name in filename:
-        if "airplane-2-FRCNN" not in name:
+        if args.dataset == "BEE23" and "BEE2216" not in name:
+            continue
+        if args.dataset == "mot17" and "MOT17-03-FRCNN" not in name:
+            continue
+        if args.dataset == "mot20" and "MOT20-06" not in name:
+            continue
+        if args.dataset == "dance" and "dancetrack0095" not in name:
+            continue
+        if args.dataset == "gmot" and "airplane-2-FRCNN" not in name:
             continue
         print('The video ' + name.split('.')[0] + ' begin!')
-        draw_gmot(name.split('.')[0],folder,save_dir="video/")
+        draw_dataset(name.split('.')[0], folder,
+                     args.dataset, save_dir="video/")
 
         print('The video ' + name.split('.')[0] + ' Done!')
-    
 
 
 def draw(name, pred, i):
