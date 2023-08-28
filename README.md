@@ -4,10 +4,10 @@
 > 
 > Xiaoyan Cao, Yiyao Zheng, Yao Yao, Huapeng Qin, Xiaoyu Cao and Shihui Guo
 > 
-> *[arXiv 2110.06864](https://arxiv.org/pdf/2308.11157v1.pdf)*
+> *[arXiv:2308.11157](https://arxiv.org/abs/2308.11157)*
 
 
-## News
+## News ✨
 * (2023.08) We provide a complete reproduction tutorial and release the proposed [BEE23](https://drive.google.com/file/d/1kcq3wV-sjr8H_HGNoefaGr_nx7OlVfPo/view) dataset as a new benchmark.
 
 ## Demo
@@ -210,7 +210,7 @@ python3 tools/train.py -f exps/example/mot/your_exp_file.py -d 8 -b 48 --fp16 -o
 ```
 
 ## Training Re-ID model
-It is coming...
+⏳ It is coming...
 
 ## Evaluation
 
