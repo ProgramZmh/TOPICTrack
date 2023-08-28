@@ -56,8 +56,8 @@ def get_main_args():
     # TODO:
     # --AARM action="store_true"
     # --TOPIC action="store_true"
-    parser.add_argument("--metric", type=str, default="res_recons")
-    parser.add_argument("--two_round_off", action="store_true")
+    parser.add_argument("--AARM", action="store_true")
+    parser.add_argument("--TOPIC", action="store_true")
 
     args = parser.parse_args()
 
@@ -155,7 +155,7 @@ def main():
             continue
 
         targets = tracker.update(
-            pred, img, np_img[0].numpy(), tag, args.metric, args.two_round_off)
+            pred, img, np_img[0].numpy(), tag, args.AARM, args.TOPIC)
         tlwhs, ids = utils.filter_targets(
             targets, args.aspect_ratio_thresh, args.min_box_area, args.dataset)
 

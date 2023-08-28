@@ -5,11 +5,9 @@ import shutil
 import time
 
 import torch
-
-
-import os.path
-import numpy as np
 import cv2
+import numpy as np
+
 import dataset
 import utils
 from external.adaptors import detector
@@ -31,19 +29,10 @@ def get_main_args():
         default=1.6,
         help="threshold for filtering out boxes of which aspect ratio are above the given value.",
     )
-    parser.add_argument(
-        "--post",
-        action="store_true",
-        help="run post-processing linear interpolation.",
-    )
+    parser.add_argument("--post", type=bool, default=True,
+                        help="run post-processing linear interpolation.",)
     parser.add_argument("--w_assoc_emb", type=float,
                         default=0.75, help="Combine weight for emb cost")
-    parser.add_argument(
-        "--alpha_fixed_emb",
-        type=float,
-        default=0.95,
-        help="Alpha fixed for EMA embedding",
-    )
     parser.add_argument(
         "--alpha_gate",
         type=float,
@@ -63,11 +52,9 @@ def get_main_args():
         help="gate",
     )
 
-    parser.add_argument("--emb_off", action="store_true")
-    parser.add_argument("--aw_param", type=float, default=0.5)
-    parser.add_argument("--new_kf_off", action="store_true")
-    parser.add_argument("--metric", type=str, default="res_recons")
-    parser.add_argument("--two_round_off", action="store_true")
+    parser.add_argument("--new_kf_off", type=bool, default=True)
+    parser.add_argument("--AARM", action="store_true")
+    parser.add_argument("--TOPIC", action="store_true")
 
     args = parser.parse_args()
 
@@ -103,7 +90,7 @@ def draw_dataset(video_id, gt_path, dataset, save_dir):
     txt_name = gt_path + '/' + video_id + '.txt'
     file_path_img = f'data/{dataset}/test/' + video_id + '/img1'
     frame_width = 1920
-    frame_height = 880
+    frame_height = 1080
     output_video = os.path.join(save_dir, f'{dataset}.mp4')
     output = cv2.VideoWriter(output_video, cv2.VideoWriter_fourcc(
         *'mp4v'), 25, (frame_width, frame_height))
@@ -158,7 +145,6 @@ def draw_dataset(video_id, gt_path, dataset, save_dir):
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2, cv2.LINE_AA)
         img = cv2.resize(img, dsize=(1920, 1080))
 
-        img = img[0:880, 0:1920]
         output.write(img)
 
     output.release()
@@ -189,11 +175,11 @@ def main():
         size = (800, 1440)
     elif args.dataset == "BEE23":
 
-        detector_path = "external/weights/bee23.pth.tar"
+        detector_path = "external/weights/topictrack_bee23.pth.tar"
         size = (800, 1440)
     elif args.dataset == "gmot":
 
-        detector_path = "external/weights/gmot.pth.tar"
+        detector_path = "external/weights/topictrack_gmot.pth.tar"
 
         size = (800, 1440)
     else:
@@ -227,7 +213,7 @@ def main():
         video_name = info[4][0].split("/")[0]
 
         tag = f"{video_name}:{frame_id}"
-
+        print(tag)
         if video_name not in results:
             results[video_name] = []
         img = img.cuda()
@@ -244,7 +230,7 @@ def main():
             continue
 
         targets = tracker.update(
-            pred, img, np_img[0].numpy(), tag, args.metric, args.two_round_off)
+            pred, img, np_img[0].numpy(), tag, args.AARM, args.TOPIC)
         tlwhs, ids = utils.filter_targets(
             targets, args.aspect_ratio_thresh, args.min_box_area, args.dataset)
 

@@ -491,11 +491,13 @@ class OCSort(object):
                     k_observations,
                     self.inertia,
                     self.w_association_emb,
-                    track_indices, tracks_info, gate, metric
+                    track_indices, tracks_info, gate, metric,two_round_off
                 )
             else:
                 motion_pre_assign = (np.empty(
                     (0, 4), dtype=int), [], [])
+            if not two_round_off:
+                appearance_pre_assign = motion_pre_assign
 
             matched_one_1, unmatched_trks_1, unmatched_dets_one_1 = min_cost_matching(
                 motion_pre_assign, appearance_pre_assign, self.alpha_gate, two_round_off)

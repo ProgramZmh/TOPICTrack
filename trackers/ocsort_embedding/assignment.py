@@ -139,12 +139,10 @@ def min_cost_matching(
 
 def cal_cost_matrix(dets_embs, trk_embs, metric):
     
-    if metric == 'res_recons':
-    
+    if metric:
         cost_matrix, sim_matrix = _nn_res_recons_cosine_distance(
             trk_embs, dets_embs, data_is_normalized=False)
     else:
-       
         cost_matrix, sim_matrix = _cosine_distance(trk_embs, dets_embs)
        
     return cost_matrix, sim_matrix

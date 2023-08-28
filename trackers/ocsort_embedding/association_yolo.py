@@ -342,7 +342,7 @@ def associate(
     previous_obs,
     vdc_weight,
     w_assoc_emb,
-    track_indices, tracks_info, gate, metric
+    track_indices, tracks_info, gate, metric,two_round_off
 ):
     if len(trackers) == 0:
         
@@ -381,6 +381,12 @@ def associate(
     
     emb_cost = emb_cost.T
     
+    if not two_round_off:
+        cost_matrix = filter_pairs(cost_matrix, gate)
+        cost_matrix[cost_matrix<INFTY_COST] = 1
+        cost_matrix[cost_matrix==INFTY_COST] = 0
+        cost_matrix = cost_matrix.T
+        iou_matrix = iou_matrix * cost_matrix
 
 
 

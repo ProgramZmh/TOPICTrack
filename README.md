@@ -101,14 +101,14 @@ Please download the required pre-trained weights by yourself and put them into `
 
 | Dataset         | HOTA | MOTA | IDF1 | FP | FN | Model (Detection) | Model (Re-ID) |
 | --------------- | ---- | ---- | ---- | ---- | ---- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| MOT17-half-val | 69.9 | 79.8 | 81.6 | 3,065 | 7,568 | topictrack_ablation.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot17_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| MOT17-half-val | 69.6 | 79.8 | 81.2 | 3,028 | 7,612 | topictrack_ablation.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot17_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
 | MOT17-test | 63.9 | 78.8 | 78.7 | 17,000 | 101,100 | topictrack_mot17.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot17_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
-| MOT20-half-val | 57.6 | 73.0 | 72.3 | 28,702 | 135,881 | topictrack_mot17.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot20_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| MOT20-half-val | 57.5 | 73.0 | 73.6 | 28,583 | 135,945 | topictrack_mot17.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot20_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
 | MOT20-test | 62.6 | 72.4 | 77.6 | 11,000 | 131,100 | topictrack_mot20.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot20_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
-| DanceTrack-val | 55.9 | 89.3 | 54.5 | 12,816 | 10,622 | topictrack_dance.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | dance_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| DanceTrack-val | 55.7 | 89.3 | 54.2 | 12,636 | 10,567 | topictrack_dance.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | dance_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
 | DanceTrack-test | 58.3 | 90.9 | 56.6 | 5,555 | 19,246 | topictrack_dance.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | dance_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
-| GMOT40-test | 84.7 | 96.6 | 92.5 | 205 | 327 | topictrack_gmot.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | gmot_AGW.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
-| BEE23-test | 71.9 | 86.7 | 86.3 | 644 | 634 | topictrack_bee.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | bee_AGW.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| GMOT40-test | 84.2 | 95.8 | 91.5 | 205 | 227 | topictrack_gmot.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | gmot_AGW.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| BEE23-test | 71.9 | 86.7 | 86.3 | 642 | 634 | topictrack_bee.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | bee_AGW.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
 
 * For more YOLO-X weights, please refer to the model zoo of [ByteTrack](https://github.com/ifzhang/ByteTrack).
 
@@ -214,7 +214,7 @@ It is coming...
 
 ## Evaluation
 
-Please download the pre-trained model mentioned in the Model zoo chapter and put it in `external/weights` before proceeding to the following steps.
+Please download the pre-trained model mentioned in the Model zoo chapter and put it in `external/weights` before conduct the following steps.
 
 ### MOT17
 
@@ -226,7 +226,7 @@ You can run the follow command:
 sh run/mot17_val.sh
 ```
 
-The results are saved in: `results/trackers/MOT17-val/mot17_val_post` path.
+The results are saved in: `results/trackers/MOT17-val/mot17_val_post`.
 
 Evaluate tracking results:
 
@@ -242,7 +242,7 @@ You can run the follow command:
 sh run/mot17_test.sh
 ```
 
-The results are saved in: `results/trackers/MOT17-val/mot17_test_post` path.
+The results are saved in: `results/trackers/MOT17-val/mot17_test_post`.
 
 ### MOT20
 
@@ -254,7 +254,7 @@ You can run the follow command:
 sh run/mot20_val.sh
 ```
 
-The results are saved in: `results/trackers/MOT20-val/mot20_val_post` path.
+The results are saved in: `results/trackers/MOT20-val/mot20_val_post`.
 
 Evaluate tracking results:
 
@@ -270,7 +270,7 @@ You can run the follow command:
 sh run/mot20_test.sh
 ```
 
-The results are saved in: `results/trackers/MOT20-val/mot20_test_post` path.
+The results are saved in: `results/trackers/MOT20-val/mot20_test_post`.
 
 ### DanceTrack
 
@@ -282,7 +282,7 @@ You can run the follow command:
 sh run/dancetrack_val.sh
 ```
 
-The results are saved in: `results/trackers/DANCE-val/dance_val_post` path.
+The results are saved in: `results/trackers/DANCE-val/dance_val_post`.
 
 Evaluate tracking results:
 
@@ -298,7 +298,7 @@ You can run the follow command:
 sh run/dancetrack_test.sh
 ```
 
-The results are saved in: `results/trackers/DANCE-val/dance_test_post` path.
+The results are saved in: `results/trackers/DANCE-val/dance_test_post`.
 
 ### GMOT-40
 
@@ -310,7 +310,7 @@ GMOT-40 has only training set and test set without dividing the validation set. 
 sh run/gmot_test.sh
 ```
 
-The results are saved in: `results/trackers/GMOT-val/gmot_test_post` path.
+The results are saved in: `results/trackers/GMOT-val/gmot_test_post`.
 
 Evaluate tracking results:
 
@@ -328,7 +328,7 @@ BEE23 has only training set and test set without dividing the validation set. Th
 sh run/bee_test.sh
 ```
 
-The results are saved in: `results/trackers/BEE23-val/bee_test_post` path.
+The results are saved in: `results/trackers/BEE23-val/bee_test_post`.
 
 Evaluate tracking results:
 
