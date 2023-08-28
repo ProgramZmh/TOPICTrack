@@ -205,23 +205,6 @@ class KalmanBoxTracker(object):
 
         return self.emb
 
-    def apply_affine_correction(self, affine):
-        m = affine[:, :2]
-        t = affine[:, 2].reshape(2, 1)
-
-        if self.last_observation.sum() > 0:
-            ps = self.last_observation[:4].reshape(2, 2).T
-            ps = m @ ps + t
-            self.last_observation[:4] = ps.T.reshape(-1)
-
-        for dt in range(self.delta_t, -1, -1):
-            if self.age - dt in self.observations:
-                ps = self.observations[self.age - dt][:4].reshape(2, 2).T
-                ps = m @ ps + t
-                self.observations[self.age - dt][:4] = ps.T.reshape(-1)
-
-        self.kf.apply_affine_correction(m, t, self.new_kf)
-
     def predict(self):
 
         if self.new_kf:
@@ -335,8 +318,6 @@ class OCSort(object):
 
         remain_inds = scores > self.det_thresh
         dets_one = dets[remain_inds]
-        frame_id = tag.split(':')[1]
-        video_name = tag.split(':')[0]
 
         return dets_one, dets_second
 
@@ -491,7 +472,7 @@ class OCSort(object):
                     k_observations,
                     self.inertia,
                     self.w_association_emb,
-                    track_indices, tracks_info, gate, metric,two_round_off
+                    track_indices, tracks_info, gate, metric, two_round_off
                 )
             else:
                 motion_pre_assign = (np.empty(
@@ -618,7 +599,7 @@ class OCSort(object):
                 unmatched_trks, np.array(to_remove_trk_indices))
 
         matched_2 = np.array(matched_2)
-        if(len(matched_2) == 0):
+        if (len(matched_2) == 0):
             matched_2 = np.empty((0, 3), dtype=int)
         else:
             matched_2 = np.concatenate(matched_2, axis=0)
@@ -627,109 +608,6 @@ class OCSort(object):
             (matched_2, np.zeros(matched_2.shape[0]).reshape(-1, 1)))
 
         return (matched_2, unmatched_trks_2, np.array([]))
-
-    def level_matching_v0(self, depth,
-                          track_indices, detection_indices,
-                          trk_embs,
-                          dets_embs,
-                          trks,
-                          dets,
-                          dets_alpha,
-                          speeds,
-                          velocities,
-                          k_observations,
-                          last_boxes,
-                          ):
-
-        if track_indices is None:
-            track_indices = np.arange(len(trks))
-        if detection_indices is None:
-            detection_indices = np.arange(len(dets))
-
-        if len(detection_indices) == 0 or len(track_indices) == 0:
-            return np.empty((0, 2), dtype=int), track_indices, detection_indices
-
-        if len(detection_indices) != 0 and len(track_indices) != 0:
-
-            tracks_info = {}
-            alpha = metric_gaussian_motion(speeds, sigma=self.sigma)
-            for i, idx in enumerate(track_indices):
-                tracks_info[idx] = alpha[i]
-
-            gate = self.gate if depth == 0 else self.gate2
-            appearance_pre_assign, emb_cost = appearance_associate(
-                dets_embs,
-                trk_embs,
-                dets, trks,
-                track_indices, detection_indices, tracks_info,
-                gate, self.iou_threshold)
-
-            if depth == 0:
-                motion_pre_assign = associate(
-                    dets,
-                    trks,
-                    dets_embs,
-                    trk_embs,
-                    emb_cost,
-                    self.iou_threshold,
-                    velocities,
-                    k_observations,
-                    self.inertia,
-                    self.w_association_emb,
-                    track_indices, tracks_info,
-                )
-            else:
-                motion_pre_assign = (np.empty(
-                    (0, 4), dtype=int), [], [])
-
-            matched_1, unmatched_trks_1, unmatched_dets_1 = min_cost_matching(
-                motion_pre_assign, appearance_pre_assign, self.alpha_gate)
-        else:
-            matched_1, unmatched_trks_1, unmatched_dets_1 = np.empty(
-                (0, 2), dtype=int), np.empty((0, 5), dtype=int), detection_indices
-
-        if unmatched_dets_1.shape[0] > 0 and unmatched_trks_1.shape[0] > 0:
-
-            if depth == 0:
-                motion_pre_assign = self.motion_third_associate(
-                    dets, last_boxes, unmatched_dets_1, unmatched_trks_1, tracks_info)
-            else:
-                motion_pre_assign = (np.empty(
-                    (0, 4), dtype=int), [], [])
-
-            left_dets_embs = dets_embs[unmatched_dets_1]
-            left_trks_embs = [trk_embs[i] for i in unmatched_trks_1]
-            left_dets = dets[unmatched_dets_1]
-            left_trks = trks[unmatched_trks_1]
-
-            gate = self.gate if depth == 0 else self.gate2
-            appearance_pre_assign, emb_cost = appearance_associate(
-                left_dets_embs,
-                left_trks_embs,
-                left_dets, left_trks,
-                unmatched_trks_1, unmatched_dets_1,
-                tracks_info,
-                gate, self.iou_threshold)
-
-            matched_2, unmatched_trks_2, unmatched_dets_2 = min_cost_matching(
-                motion_pre_assign, appearance_pre_assign, self.alpha_gate)
-        else:
-            matched_2 = np.empty((0, 2), dtype=int)
-            unmatched_trks_2 = unmatched_trks_1
-            unmatched_dets_2 = unmatched_dets_1
-
-        if len(matched_1) and len(matched_2):
-            matched = np.concatenate((matched_1, matched_2), axis=0)
-        elif len(matched_2):
-            matched = matched_2
-        elif len(matched_1):
-            matched = matched_1
-        else:
-            matched = np.empty((0, 2), dtype=int)
-        unmatched_trks = unmatched_trks_2
-        unmatched_dets = unmatched_dets_2
-
-        return matched, unmatched_trks, unmatched_dets
 
     def map_origin_ind(self, track_indices_l,
                        unmatched_dets,
@@ -768,7 +646,6 @@ class OCSort(object):
         matched_second = np.empty((0, 5), dtype=int)
 
         unmatched_trks_l = []
-        unmatched_trks_final = []
 
         for depth in range(1):
 
