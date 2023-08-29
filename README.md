@@ -2,7 +2,7 @@
 
 TOPICTrack proposes a ***parallel association paradigm***, can take full advantage of motion and appearance features.
 
-<p align="center"><img src="figs/pipeline.png" width="800"/></p>
+<p align="center"><img src="figs/pipeline.png" width="600"/></p>
 
 > [**TOPIC: A Parallel Association Paradigm for Multi-Object Tracking under Complex Motions and Diverse Scenes**](https://arxiv.org/pdf/2308.11157v1.pdf)
 >
