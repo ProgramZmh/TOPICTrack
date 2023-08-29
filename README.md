@@ -1,42 +1,40 @@
 # TOPIC: A Parallel Association Paradigm for Multi-Object Tracking under Complex Motions and Diverse Scenes
 
+TOPICTrack proposes a ***parallel association paradigm***, can take full advantage of motion and appearance features.
+
+<p align="center"><img src="figs/pipeline.png" width="800"/></p>
+
 > [**TOPIC: A Parallel Association Paradigm for Multi-Object Tracking under Complex Motions and Diverse Scenes**](https://arxiv.org/pdf/2308.11157v1.pdf)
-> 
+>
 > Xiaoyan Cao, Yiyao Zheng, Yao Yao, Huapeng Qin, Xiaoyu Cao and Shihui Guo
-> 
+>
 > *[arXiv:2308.11157](https://arxiv.org/abs/2308.11157)*
 
 
 ## News ✨
 * (2023.08) We provide a complete reproduction tutorial and release the proposed [BEE23](https://drive.google.com/file/d/1kcq3wV-sjr8H_HGNoefaGr_nx7OlVfPo/view) dataset as a new benchmark.
 
-## Demo
+## Abstract
+
+Video data and algorithms have driven advances in multi-object tracking (MOT). While existing MOT datasets focus on occlusion and appearance similarity, complex motion patterns are widespread yet often overlooked. To address this issue, we introduce a novel dataset named BEE23 to highlight complex motions. Identity association algorithms have long been the focus of MOT research. Existing trackers can be categorized into two association paradigms: the single-feature paradigm (based on either motion or appearance features) and the serial paradigm (where one feature serves as secondary while the other is primary). However, these paradigms fall short of fully utilizing different features. In this paper, we propose a parallel paradigm and present the Two-round Parallel Matching Mechanism (TOPIC) to implement it. TOPIC leverages both motion and appearance features, adaptively selecting the preferable one as the assignment metric based on motion level. Furthermore, we provide an Attention-based Appearance Reconstruct Module (AARM) to enhance the representation of appearance feature embeddings. Comprehensive experiments demonstrate that our approach achieves state-of-the-art performance on four public datasets and BEE23. Importantly, our proposed parallel paradigm outperforms existing association paradigms significantly, e.g., reducing false negatives by 12% to 51% compared to the single-feature association paradigm. The dataset and association paradigm introduced in this work provide a fresh perspective for advancing the MOT field.
+
+## Tracking performance
+
+### Results on five benchmarks test set
+
+| Dataset    |  HOTA | MOTA | IDF1 | AssA | AssR | FP | FN | IDs | Frag |
+|------------|-------|------|------|-------|-------|------|------|------|------|
+|MOT17       | 63.9 | 78.8 | 78.7 | 64.3 | 69.9 | 17,000 | 101,100 | 1,515 | 2,613 |
+|MOT20       | 62.6 | 72.4 | 77.6 | 65.4 | 70.3 | 11,000 | 131,100 | 869   | 1,574 |
+|DanceTrack  | 58,3 | 90.9 | 58.4 | 42.3 | 48.1 | 5,555  | 19,246  | 1,471 | 2,106 |
+|GMOT-40     | 84.2 | 95.8 | 91.5 | 81.9 | 84.7 | 205    | 227     | 524   | 92    |
+|BEE23       | 71.9 | 86.7 | 86.3 | 71.3 | 77.0 | 642    | 634     | 348   | 220   |
+
+### Visualization results on five benchmarks test set
 
 <p align="center"><img src="figs/demo.gif" width="800"/></p>
 
-```
-python3 demo.py --exp_name mot17_test --dataset mot17 --test_dataset
-python3 demo.py --exp_name mot20_test --dataset mot20 --test_dataset
-python3 demo.py --exp_name dance_test --dataset dance --test_dataset
-python3 demo.py --exp_name gmot_test --dataset gmot --test_dataset
-python3 demo.py --exp_name bee_test --dataset BEE23 --test_dataset
-```
-
-
-## Abstract
-Video data and algorithms have driven advances in multi-object tracking (MOT). While existing MOT datasets focus on occlusion and appearance similarity, complex motion patterns are widespread yet often overlooked. To address this issue, we introduce a novel dataset named BEE23 to highlight complex motions. Identity association algorithms have long been the focus of MOT research. Existing trackers can be categorized into two association paradigms: the single-feature paradigm (based on either motion or appearance features) and the serial paradigm (where one feature serves as secondary while the other is primary). However, these paradigms fall short of fully utilizing different features. In this paper, we propose a parallel paradigm and present the Two-round Parallel Matching Mechanism (TOPIC) to implement it. TOPIC leverages both motion and appearance features, adaptively selecting the preferable one as the assignment metric based on motion level. Furthermore, we provide an Attention-based Appearance Reconstruct Module (AARM) to enhance the representation of appearance feature embeddings. Comprehensive experiments demonstrate that our approach achieves state-of-the-art performance on four public datasets and BEE23. Importantly, our proposed parallel paradigm outperforms existing association paradigms significantly, e.g., reducing false negatives by 12% to 51% compared to the single-feature association paradigm. The dataset and association paradigm introduced in this work provide a fresh perspective for advancing the MOT field.
-
-<p align="center"><img src="figs/data_mot.png" width="800"/></p>
-
-> Comparison of different datasets' properties. In addition to occlusion and highly similar appearance, BEE23 stands out for its remarkable property of complex motion patterns. This is evident in the diversity of motion patterns between objects and the variability of motion patterns within a single object. In the legend, “Complex” and “Simple” denote objects with the most complex and simplest motion patterns in the scene, respectively.
-
-<p align="center"><img src="figs/pipeline.png" width="800"/></p>
-
-> Comparison of existing association paradigms with our proposed parallel paradigm. (a) The single-feature association paradigm uses either motion or appearance features as the assignment metric. (b) The serial association paradigm manually specifies a feature to filter association candidates, followed by another feature as the primary assignment metric, akin to taking the “intersection” of motion and appearance matches. (c) Our proposed parallel association paradigm utilizes motion and appearance features as assignment metrics in parallel, similar to taking the union set, and can effectively resolve conflicts.
-
-
 ## Installation
-### Installing on the host machine
 
 - Install Python dependencies. We utilize Python 3.8 and PyTorch 1.8.1.
 
@@ -57,30 +55,30 @@ Video data and algorithms have driven advances in multi-object tracking (MOT). W
 
 ## Data preparation
 
+### For detector and tracking
+
 Download [MOT17](https://motchallenge.net/), [MOT20](https://motchallenge.net/), [DanceTrack](https://drive.google.com/drive/folders/1ASZCFpPEfSOJRktR8qQ_ZoT9nZR0hOea), [GMOT-40](https://spritea.github.io/GMOT40/download.html), [BEE23](https://drive.google.com/file/d/1kcq3wV-sjr8H_HGNoefaGr_nx7OlVfPo/view) and put them under <TOPICTrack_HOME>/data in the following structure:
 ```
 data
 |-- mot
 |   |-- test
-|   `-- train
+|   |-- train
 |-- MOT20
 |   |-- test
-|   `-- train
+|   |-- train
 |-- dancetrack
 |   |-- test
 |   |-- train
-|   `-- val
+|   |-- val
 |-- gmot
 |   |-- test
-|   `-- train
-`-- BEE23
+|   |-- train
+|-- BEE23
     |-- test
-    `-- train
+    |-- train
 ```
 
 Note that the GMOT-40 contains 4 categories with 10 sequences each. Since the official description does not split the training and test sets for these sequences, this work treats 3 of them (sequentially numbered 0,1,3) for each category as the training set and the remaining 1 (sequentially numbered 2) as the test set.
-
-
 
 Then, you need to turn the datasets to COCO format:
 
@@ -93,22 +91,26 @@ python3 tools/convert_gmot_to_coco.py
 python3 tools/convert_bee_to_coco.py
 ```
 
+### For Re-ID model
+
+⏳ It is coming...
+
 ## Model zoo
 
 We provide some pretrained YOLO-X weights and FastReID weights for TOPICTrack.
 
 Please download the required pre-trained weights by yourself and put them into `external/weights`.
 
-| Dataset         | HOTA | MOTA | IDF1 | FP | FN | Model (Detection) | Model (Re-ID) |
-| --------------- | ---- | ---- | ---- | ---- | ---- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| MOT17-half-val | 69.6 | 79.8 | 81.2 | 3,028 | 7,612 | topictrack_ablation.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot17_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
-| MOT17-test | 63.9 | 78.8 | 78.7 | 17,000 | 101,100 | topictrack_mot17.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot17_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
-| MOT20-half-val | 57.5 | 73.0 | 73.6 | 28,583 | 135,945 | topictrack_mot17.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot20_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
-| MOT20-test | 62.6 | 72.4 | 77.6 | 11,000 | 131,100 | topictrack_mot20.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot20_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
-| DanceTrack-val | 55.7 | 89.3 | 54.2 | 12,636 | 10,567 | topictrack_dance.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | dance_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
-| DanceTrack-test | 58.3 | 90.9 | 56.6 | 5,555 | 19,246 | topictrack_dance.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | dance_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
-| GMOT40-test | 84.2 | 95.8 | 91.5 | 205 | 227 | topictrack_gmot.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | gmot_AGW.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
-| BEE23-test | 71.9 | 86.7 | 86.3 | 642 | 634 | topictrack_bee.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | bee_AGW.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| Dataset         | HOTA | MOTA | IDF1 | FP     | FN      | Model (Detection)                                            | Model (Re-ID)                                                |
+| --------------- | ---- | ---- | ---- | ------ | ------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| MOT17-half-val  | 69.6 | 79.8 | 81.2 | 3,028  | 7,612   | topictrack_ablation.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot17_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| MOT17-test      | 63.9 | 78.8 | 78.7 | 17,000 | 101,100 | topictrack_mot17.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot17_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| MOT20-half-val  | 57.5 | 73.0 | 73.6 | 28,583 | 135,945 | topictrack_mot17.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot20_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| MOT20-test      | 62.6 | 72.4 | 77.6 | 11,000 | 131,100 | topictrack_mot20.pth.tar [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | mot20_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| DanceTrack-val  | 55.7 | 89.3 | 54.2 | 12,636 | 10,567  | topictrack_dance.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | dance_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| DanceTrack-test | 58.3 | 90.9 | 56.6 | 5,555  | 19,246  | topictrack_dance.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | dance_sbs_S50.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| GMOT40-test     | 84.2 | 95.8 | 91.5 | 205    | 227     | topictrack_gmot.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | gmot_AGW.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
+| BEE23-test      | 71.9 | 86.7 | 86.3 | 642    | 634     | topictrack_bee.pth.tar  [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] | bee_AGW.pth [[google](https://drive.google.com/drive/folders/16GETvgDgDBUHVT-rwTzIhCbX8bSA8bxN)] |
 
 * For more YOLO-X weights, please refer to the model zoo of [ByteTrack](https://github.com/ifzhang/ByteTrack).
 
@@ -336,7 +338,19 @@ Evaluate tracking results:
 exp=bee_test dataset=BEE23 sh eval_metrics.sh
 ```
 
+## Demo
+
+<p align="center"><img src="figs/bee.gif" width="400"/></p>
+
+```
+# --dataset options: mot17 | mot20 | dance | gmot | BEE23
+python3 demo.py --exp_name bee_test --dataset BEE23 --test_dataset
+```
+
+The generated video will be saved in `videos/`.
+
 ## Citation
+
 If you find this project useful, please consider to cite our paper. Thank you!
 
 ```
