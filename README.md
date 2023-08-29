@@ -250,9 +250,9 @@ cd ./fast-reid
 python3 tools/train_net.py --config-file ./configs/gmot/AGW_S50.yml MODEL.DEVICE "cuda:0"
 ```
 
-The train results are saved in: `fast-reid/logs/gmot_AGW.pth`.
+The train results are saved in: `fast-reid/logs/gmot_AGW/model_best.pth`.
 
-Please move the saved model to `external/weights/`.
+Please rename the model `model_best.pth` to `gmot_AGW.pth`, and move it to `external/weights/`.
 
 #### Train BEE23 test model 
 
@@ -270,9 +270,9 @@ cd ./fast-reid
 python3 tools/train_net.py --config-file ./configs/bee/AGW_S50.yml MODEL.DEVICE "cuda:0"
 ```
 
-The train results are saved in: `fast-reid/logs/bee23_AGW.pth`.
+The train results are saved in: `fast-reid/logs/bee_AGW/model_best.pth`.
 
-Please move the saved model to `external/weights/`.
+Please rename the model `model_best.pth` to `bee23_AGW.pth`, and move it to `external/weights/`.
 
 ## Evaluation
 
