@@ -12,6 +12,7 @@ TOPICTrack proposes a ***parallel association paradigm***, can take full advanta
 
 
 ## News ✨
+
 * (2023.08) We provide a complete reproduction tutorial and release the proposed [BEE23](https://drive.google.com/file/d/1kcq3wV-sjr8H_HGNoefaGr_nx7OlVfPo/view) dataset as a new benchmark.
 
 ## Abstract
@@ -22,13 +23,13 @@ Video data and algorithms have driven advances in multi-object tracking (MOT). W
 
 ### Results on five benchmarks test set
 
-| Dataset    |  HOTA | MOTA | IDF1 | AssA | AssR | FP | FN | IDs | Frag |
-|------------|-------|------|------|-------|-------|------|------|------|------|
-|MOT17       | 63.9 | 78.8 | 78.7 | 64.3 | 69.9 | 17,000 | 101,100 | 1,515 | 2,613 |
-|MOT20       | 62.6 | 72.4 | 77.6 | 65.4 | 70.3 | 11,000 | 131,100 | 869   | 1,574 |
-|DanceTrack  | 58.3 | 90.9 | 58.4 | 42.3 | 48.1 | 5,555  | 19,246  | 1,471 | 2,106 |
-|GMOT-40     | 84.2 | 95.8 | 91.5 | 81.9 | 84.7 | 205    | 227     | 524   | 92    |
-|BEE23       | 71.9 | 86.7 | 86.3 | 71.3 | 77.0 | 642    | 634     | 348   | 220   |
+| Dataset    | HOTA | MOTA | IDF1 | AssA | AssR | FP     | FN      | IDs   | Frag  |
+| ---------- | ---- | ---- | ---- | ---- | ---- | ------ | ------- | ----- | ----- |
+| MOT17      | 63.9 | 78.8 | 78.7 | 64.3 | 69.9 | 17,000 | 101,100 | 1,515 | 2,613 |
+| MOT20      | 62.6 | 72.4 | 77.6 | 65.4 | 70.3 | 11,000 | 131,100 | 869   | 1,574 |
+| DanceTrack | 58.3 | 90.9 | 58.4 | 42.3 | 48.1 | 5,555  | 19,246  | 1,471 | 2,106 |
+| GMOT-40    | 84.2 | 95.8 | 91.5 | 81.9 | 84.7 | 205    | 227     | 524   | 92    |
+| BEE23      | 71.9 | 86.7 | 86.3 | 71.3 | 77.0 | 642    | 634     | 348   | 220   |
 
 ### Visualization results on five benchmarks test set
 
@@ -58,6 +59,7 @@ Video data and algorithms have driven advances in multi-object tracking (MOT). W
 ### For detector and tracking
 
 Download [MOT17](https://motchallenge.net/), [MOT20](https://motchallenge.net/), [DanceTrack](https://drive.google.com/drive/folders/1ASZCFpPEfSOJRktR8qQ_ZoT9nZR0hOea), [GMOT-40](https://spritea.github.io/GMOT40/download.html), [BEE23](https://drive.google.com/file/d/1kcq3wV-sjr8H_HGNoefaGr_nx7OlVfPo/view) and put them under <TOPICTrack_HOME>/data in the following structure:
+
 ```
 data
 |-- mot
@@ -93,7 +95,21 @@ python3 tools/convert_bee_to_coco.py
 
 ### For Re-ID model
 
-⏳ It is coming...
+Download  [GMOT-40-reid](https://drive.google.com/file/d/16zglooRN-XgAK9onV8QpAZGjk1mRK48L/view?usp=sharing), [BEE23-reid](https://drive.google.com/file/d/1pZnvEQKNlEE-42o_fkuiKdarnUGtF1g0/view?usp=sharing) and put them under <TOPICTrack_HOME>/fast-reid/datasets in the following structure:
+
+```
+datasets
+|-- BEE23
+|   |-- bounding_box_test
+|   |-- bounding_box_train
+|   |-- query
+|-- gmot
+    |-- bounding_box_test
+    |-- bounding_box_train
+    |-- query
+```
+
+Here we use [Deep-OC-SORT](https://github.com/GerardMaggiolino/Deep-OC-SORT/) trained Re-ID models on [MOT17](https://drive.google.com/file/d/1MMfyl6H8htvbUBnSp2OtByI_Cofh-cy7/view?usp=drive_link), [MOT20](https://drive.google.com/file/d/1pSzcJTTeHWIE_28-fwqh8cdshmL0FS22/view?usp=drive_link), and [DanceTrack](https://drive.google.com/file/d/1grM0Al3y83TJ8g6nddbFEKx7PpAO0MU8/view?usp=drive_link).
 
 ## Model zoo
 
@@ -115,9 +131,10 @@ Please download the required pre-trained weights by yourself and put them into `
 * For more YOLO-X weights, please refer to the model zoo of [ByteTrack](https://github.com/ifzhang/ByteTrack).
 
 ## Training detector
+
 You can use TOPICTrack without training by adopting existing detectors. But we borrow the training guidelines from ByteTrack in case you want work on your own detector. 
 
-Download the COCO-pretrained YOLOX weight [here](https://github.com/Megvii-BaseDetection/YOLOX/tree/0.1.0) and put it under *\<TOPICTrack_HOME\>/pretrained*.
+Download the COCO-pretrained YOLOX weight [here](https://github.com/Megvii-BaseDetection/YOLOX/tree/0.1.0) and put it under `external/weights`.
 
 #### Train ablation model MOT17 half train
 
@@ -212,7 +229,50 @@ python3 tools/train.py -f exps/example/mot/your_exp_file.py -d 8 -b 48 --fp16 -o
 ```
 
 ## Training Re-ID model
-⏳ It is coming...
+
+Here we use [Deep-OC-SORT](https://github.com/GerardMaggiolino/Deep-OC-SORT/) trained Re-ID models on [MOT17](https://drive.google.com/file/d/1MMfyl6H8htvbUBnSp2OtByI_Cofh-cy7/view?usp=drive_link), [MOT20](https://drive.google.com/file/d/1pSzcJTTeHWIE_28-fwqh8cdshmL0FS22/view?usp=drive_link), and [DanceTrack](https://drive.google.com/file/d/1grM0Al3y83TJ8g6nddbFEKx7PpAO0MU8/view?usp=drive_link), download the weights and put them in `external/weights`.
+
+The training process for GMOT-40 and BEE23 is as follows.
+
+#### Train GMOT-40 test model
+
+You can run the follow command:
+
+```shell
+cd ./fast-reid
+sh gmot_train_AGW.sh
+```
+
+Or
+
+```shell
+cd ./fast-reid
+python3 tools/train_net.py --config-file ./configs/gmot/AGW_S50.yml MODEL.DEVICE "cuda:0"
+```
+
+The train results are saved in: `fast-reid/logs/gmot_AGW.pth`.
+
+Please move the saved model to `external/weights/`.
+
+#### Train BEE23 test model 
+
+You can run the follow command:
+
+```shell
+cd ./fast-reid
+sh bee_train_AGW.sh
+```
+
+Or
+
+```shell
+cd ./fast-reid
+python3 tools/train_net.py --config-file ./configs/bee/AGW_S50.yml MODEL.DEVICE "cuda:0"
+```
+
+The train results are saved in: `fast-reid/logs/bee23_AGW.pth`.
+
+Please move the saved model to `external/weights/`.
 
 ## Evaluation
 
