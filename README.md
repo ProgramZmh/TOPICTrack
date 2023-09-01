@@ -37,7 +37,7 @@ Video data and algorithms have driven advances in multi-object tracking (MOT). W
 
 ## Installation
 
-- Install Python dependencies. We utilize Python 3.8 and PyTorch 1.8.1.
+- Install Python dependencies. We utilize Python 3.8 and PyTorch 1.8.0.
 
   ```
   git clone https://github.com/holmescao/TOPICTrack
