@@ -414,13 +414,11 @@ The generated video will be saved in `videos/`.
 If you find this project useful, please consider to cite our paper. Thank you!
 
 ```
-@misc{cao2023topic,
-      title={TOPIC: A Parallel Association Paradigm for Multi-Object Tracking under Complex Motions and Diverse Scenes}, 
-      author={Xiaoyan Cao and Yiyao Zheng and Yao Yao and Huapeng Qin and Xiaoyu Cao and Shihui Guo},
-      year={2023},
-      eprint={2308.11157},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
+@article{cao2023topic,
+  title={TOPIC: A Parallel Association Paradigm for Multi-Object Tracking under Complex Motions and Diverse Scenes},
+  author={Cao, Xiaoyan and Zheng, Yiyao and Yao, Yao and Qin, Huapeng and Cao, Xiaoyu and Guo, Shihui},
+  journal={arXiv preprint arXiv:2308.11157},
+  year={2023}
 }
 ```
 
